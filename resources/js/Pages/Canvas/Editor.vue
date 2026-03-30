@@ -42,6 +42,36 @@ const stageRef = ref(null);
 const transformerRef = ref(null);
 const nodeRefs = new Map();
 
+const canvasViewportRef = ref(null);
+const stageScale = ref(1);
+const stageViewportWidth = ref(STAGE_WIDTH);
+const stageViewportHeight = ref(STAGE_HEIGHT);
+
+// Deck rename
+const deckTitle = ref(props.deck.title);
+const isRenamingDeck = ref(false);
+
+async function commitRenameDeck() {
+    isRenamingDeck.value = false;
+    const newTitle = deckTitle.value.trim();
+    if (!newTitle) { deckTitle.value = props.deck.title; return; }
+    if (newTitle === props.deck.title) return;
+    try {
+        await axios.patch(`/api/decks/${props.deck.id}`, { title: newTitle });
+    } catch {
+        deckTitle.value = props.deck.title;
+    }
+}
+
+function startRenameDeck() {
+    isRenamingDeck.value = true;
+    nextTick(() => {
+        const el = document.querySelector('.deck-title-input');
+        el?.focus();
+        el?.select();
+    });
+}
+
 const elements = ref([]);
 const selectedIds = ref([]);
 const isSaving = ref(false);
@@ -110,6 +140,20 @@ const selectedIconElement = computed(() => selectedElement.value?.type === 'icon
 const selectedVideoElement = computed(() => selectedElement.value?.type === 'video' ? selectedElement.value : null);
 const editingTextElement = computed(() => elements.value.find((element) => element.id === editingTextElementId.value) ?? null);
 const isEditingText = computed(() => editingTextElementId.value !== null);
+const canvasOuterStyle = computed(() => ({
+    width: `${stageViewportWidth.value + 16}px`,
+    minWidth: 'fit-content',
+}));
+const canvasFrameStyle = computed(() => ({
+    width: `${stageViewportWidth.value}px`,
+    height: `${stageViewportHeight.value}px`,
+}));
+const canvasScaleStyle = computed(() => ({
+    width: `${STAGE_WIDTH}px`,
+    height: `${STAGE_HEIGHT}px`,
+    transform: `scale(${stageScale.value})`,
+    transformOrigin: 'top left',
+}));
 const selectedTextValue = computed(() => {
     if (!selectedTextElement.value) {
         return '';
@@ -1497,6 +1541,31 @@ watch(elements, (nextElements) => {
         });
 }, { deep: true });
 
+const updateCanvasViewport = () => {
+    const viewport = canvasViewportRef.value;
+
+    if (!viewport || typeof window === 'undefined') {
+        return;
+    }
+
+    if (window.innerWidth < 768) {
+        stageScale.value = 1;
+        stageViewportWidth.value = STAGE_WIDTH;
+        stageViewportHeight.value = STAGE_HEIGHT;
+
+        return;
+    }
+
+    const rect = viewport.getBoundingClientRect();
+    const maxWidth = Math.max(320, rect.width - 16);
+    const maxHeight = Math.max(220, window.innerHeight - rect.top - 24);
+    const scale = Math.min(maxWidth / STAGE_WIDTH, maxHeight / STAGE_HEIGHT, 1);
+
+    stageScale.value = scale;
+    stageViewportWidth.value = Math.round(STAGE_WIDTH * scale);
+    stageViewportHeight.value = Math.round(STAGE_HEIGHT * scale);
+};
+
 onMounted(() => {
     hydrateCanvasState();
     fetchProjectAssets();
@@ -1504,12 +1573,17 @@ onMounted(() => {
     fetchAiUsage();
     startCollaborationSync();
     window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', updateCanvasViewport);
+    nextTick(() => {
+        updateCanvasViewport();
+    });
 });
 
 onBeforeUnmount(() => {
     stopTextEditMode(false);
     stopCollaborationSync();
     window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('resize', updateCanvasViewport);
 });
 </script>
 
@@ -1521,7 +1595,30 @@ onBeforeUnmount(() => {
             <div class="editor-header flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <p class="text-xs uppercase tracking-widest text-white/40">{{ deck.project.name }}</p>
-                    <h2 class="font-semibold text-xl text-white leading-tight">{{ deck.title }} · {{ slideTitle }}</h2>
+                    <div class="flex items-center gap-2">
+                        <!-- Inline rename input -->
+                        <input
+                            v-if="isRenamingDeck"
+                            class="deck-title-input bg-transparent border-b border-amber-400/60 font-semibold text-xl text-white leading-tight outline-none focus:border-amber-400 w-64 py-0.5"
+                            v-model="deckTitle"
+                            @keydown.enter="commitRenameDeck"
+                            @keydown.escape="isRenamingDeck = false; deckTitle = deck.title"
+                            @blur="commitRenameDeck"
+                        />
+                        <template v-else>
+                            <h2 class="font-semibold text-xl text-white leading-tight">{{ deckTitle }} · {{ slideTitle }}</h2>
+                            <button
+                                type="button"
+                                title="Rename presentation"
+                                class="text-white/30 hover:text-amber-400 transition"
+                                @click="startRenameDeck"
+                            >
+                                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                </svg>
+                            </button>
+                        </template>
+                    </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <Link
@@ -1852,9 +1949,11 @@ onBeforeUnmount(() => {
                         <p v-if="errorMessage" class="mt-2 text-xs font-medium text-red-300">{{ errorMessage }}</p>
                     </aside>
 
-                    <section class="editor-canvas-shell rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-2xl overflow-auto">
-                        <div class="relative mx-auto w-[1280px] rounded-xl border border-white/20 bg-[#0f1323] p-3">
-                            <div class="relative w-[1280px] rounded-lg border border-white/10 bg-white">
+                    <section class="editor-canvas-shell rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-2xl overflow-x-auto md:overflow-hidden">
+                        <div ref="canvasViewportRef" class="relative mx-auto w-full">
+                            <div class="relative mx-auto rounded-xl border border-white/20 bg-[#0f1323] p-2" :style="canvasOuterStyle">
+                                <div class="relative overflow-hidden rounded-lg border border-white/10 bg-white" :style="canvasFrameStyle">
+                                    <div class="absolute left-0 top-0" :style="canvasScaleStyle">
                             <v-stage
                                 ref="stageRef"
                                 :config="{ width: STAGE_WIDTH, height: STAGE_HEIGHT }"
@@ -2145,6 +2244,8 @@ onBeforeUnmount(() => {
                                 <EditorContent :editor="textEditor" />
                                 <p class="mt-2 text-[11px] text-white/50">Press Esc to exit text edit mode.</p>
                             </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </section>

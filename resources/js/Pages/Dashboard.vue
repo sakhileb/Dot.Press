@@ -1,7 +1,8 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, nextTick } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
     projects: {
@@ -13,6 +14,39 @@ const props = defineProps({
 const totalDecks = computed(() =>
     props.projects.reduce((sum, p) => sum + (p.decks?.length ?? 0), 0)
 );
+
+// Inline rename state
+const editingDeckId = ref(null);
+const editingTitle = ref('');
+
+function startRename(deck) {
+    editingDeckId.value = deck.id;
+    editingTitle.value = deck.title;
+    nextTick(() => {
+        const el = document.querySelector('.deck-rename-input');
+        el?.focus();
+        el?.select();
+    });
+}
+
+async function commitRename(deck) {
+    const newTitle = editingTitle.value.trim();
+    if (newTitle && newTitle !== deck.title) {
+        try {
+            await axios.patch(`/api/decks/${deck.id}`, { title: newTitle });
+            deck.title = newTitle;
+        } catch {
+            // revert silently
+        }
+    }
+    editingDeckId.value = null;
+    editingTitle.value = '';
+}
+
+function cancelRename() {
+    editingDeckId.value = null;
+    editingTitle.value = '';
+}
 </script>
 
 <template>
@@ -107,7 +141,16 @@ const totalDecks = computed(() =>
 
                             <!-- Deck info -->
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-white truncate">{{ deck.title }}</p>
+                                <!-- Inline rename input -->
+                                <input
+                                    v-if="editingDeckId === deck.id"
+                                    class="deck-rename-input w-full bg-transparent border-b border-amber-400/60 text-sm font-medium text-white outline-none focus:border-amber-400 py-0.5 pr-2"
+                                    v-model="editingTitle"
+                                    @keydown.enter="commitRename(deck)"
+                                    @keydown.escape="cancelRename"
+                                    @blur="commitRename(deck)"
+                                />
+                                <p v-else class="text-sm font-medium text-white truncate">{{ deck.title }}</p>
                                 <p class="text-xs text-white/40 mt-0.5">
                                     {{ deck.slides_count ?? 0 }} slide{{ (deck.slides_count ?? 0) !== 1 ? 's' : '' }}
                                     <span v-if="deck.is_template" class="ml-2 inline-flex items-center rounded-full bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 text-amber-400 text-[10px] font-medium">Template</span>
@@ -121,6 +164,16 @@ const totalDecks = computed(() =>
 
                             <!-- Actions -->
                             <div class="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition">
+                                <button
+                                    type="button"
+                                    class="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition"
+                                    title="Rename"
+                                    @click.prevent="startRename(deck)"
+                                >
+                                    <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </button>
                                 <Link
                                     :href="route('editor.start', { deck_id: deck.id })"
                                     class="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition"
