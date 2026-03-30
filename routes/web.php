@@ -21,7 +21,15 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        $projects = request()->user()
+            ->projects()
+            ->with(['decks' => fn ($q) => $q->withCount('slides')->orderBy('sort_order')])
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Dashboard', [
+            'projects' => $projects,
+        ]);
     })->name('dashboard');
 
     Route::get('/editor', [SlideEditorController::class, 'start'])->name('editor.start');

@@ -1518,46 +1518,46 @@ onBeforeUnmount(() => {
         <Head :title="`Editor - ${slideTitle}`" />
 
         <template #header>
-            <div class="flex items-center justify-between gap-4">
+            <div class="editor-header flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p class="text-xs uppercase tracking-widest text-gray-500">{{ deck.project.name }}</p>
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ deck.title }} · {{ slideTitle }}</h2>
+                    <p class="text-xs uppercase tracking-widest text-white/40">{{ deck.project.name }}</p>
+                    <h2 class="font-semibold text-xl text-white leading-tight">{{ deck.title }} · {{ slideTitle }}</h2>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <Link
                         :href="route('presentation.slides.show', [deck.id, slide.id])"
-                        class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
                     >
                         Present
                     </Link>
                     <a
                         :href="route('export.decks.pdf', [deck.id])"
-                        class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
                     >
                         Export PDF
                     </a>
                     <a
                         :href="route('export.decks.pptx', [deck.id])"
-                        class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
                     >
                         Export PPTX
                     </a>
                     <button
-                        class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
                         type="button"
                         @click="undo"
                     >
                         Undo
                     </button>
                     <button
-                        class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
                         type="button"
                         @click="redo"
                     >
                         Redo
                     </button>
                     <button
-                        class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-60"
+                        class="rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-amber-500/25 transition hover:brightness-110 disabled:opacity-60"
                         :disabled="isSaving"
                         type="button"
                         @click="saveCanvas"
@@ -1568,34 +1568,34 @@ onBeforeUnmount(() => {
             </div>
         </template>
 
-        <div class="py-6">
+        <div class="editor-page py-8">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-6 lg:grid-cols-[280px,1fr]">
-                    <aside class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Slides</p>
+                    <aside class="editor-panel editor-sidebar rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-2xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Slides</p>
                         <div class="mt-3 space-y-2">
                             <Link
                                 v-for="item in slides"
                                 :key="item.id"
                                 :href="route('editor.slides.show', [deck.id, item.id])"
-                                class="block rounded-lg border px-3 py-2 text-sm transition"
-                                :class="item.id === slide.id ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'"
+                                class="block rounded-xl border px-3 py-2 text-sm transition"
+                                :class="item.id === slide.id ? 'border-amber-400/40 bg-amber-400/10 text-amber-300' : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white'"
                             >
                                 {{ item.title || `Slide ${item.sort_order + 1}` }}
                             </Link>
                         </div>
 
                         <button
-                            class="mt-4 w-full rounded-md border border-dashed border-gray-400 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            class="mt-4 w-full rounded-xl border border-dashed border-white/25 px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10"
                             type="button"
                             @click="createSlide"
                         >
                             + New Slide
                         </button>
 
-                        <div class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Collaboration</p>
-                            <p class="mt-2 text-xs text-gray-600">Revision {{ slideRevision }}</p>
+                        <div class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Collaboration</p>
+                            <p class="mt-2 text-xs text-white/60">Revision {{ slideRevision }}</p>
                             <div class="mt-2 flex flex-wrap gap-1">
                                 <span
                                     v-for="person in collaborators"
@@ -1606,35 +1606,35 @@ onBeforeUnmount(() => {
                                     <span class="inline-block h-2 w-2 rounded-full" :style="{ backgroundColor: person.color }" />
                                     {{ person.name }}
                                 </span>
-                                <p v-if="collaborators.length === 0" class="text-xs text-gray-500">No active collaborators on this slide.</p>
+                                <p v-if="collaborators.length === 0" class="text-xs text-white/40">No active collaborators on this slide.</p>
                             </div>
                         </div>
 
-                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Elements</p>
+                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-white/40">Elements</p>
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <button class="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700" type="button" @click="addElement('rect')">Rect</button>
-                            <button class="rounded-md bg-gray-800 px-3 py-2 text-sm font-medium text-white hover:bg-black" type="button" @click="addElement('text')">Text</button>
-                            <button class="rounded-md bg-slate-700 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800" type="button" @click="addElement('image')">Image Box</button>
-                            <button class="rounded-md bg-zinc-700 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800" type="button" @click="addElement('video')">Video</button>
-                            <button class="rounded-md bg-indigo-700 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-800" type="button" @click="addElement('group')">Group Box</button>
-                            <button class="rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white hover:bg-amber-700" type="button" @click="addElement('icon')">Icon</button>
-                            <button class="rounded-md bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700" type="button" @click="addElement('circle')">Circle</button>
-                            <button class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800" type="button" @click="addElement('polygon')">Polygon</button>
-                            <button class="rounded-md bg-cyan-700 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-800" type="button" @click="addElement('line')">Line</button>
-                            <button class="rounded-md bg-violet-700 px-3 py-2 text-sm font-medium text-white hover:bg-violet-800" type="button" @click="addElement('arrow')">Arrow</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('rect')">Rect</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('text')">Text</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('image')">Image Box</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('video')">Video</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('group')">Group Box</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('icon')">Icon</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('circle')">Circle</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('polygon')">Polygon</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('line')">Line</button>
+                            <button class="editor-element-btn" type="button" @click="addElement('arrow')">Arrow</button>
                         </div>
 
-                        <div class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Ask AI</p>
-                            <label class="mt-3 block text-xs text-gray-600">Generate new slide from prompt</label>
+                        <div class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Ask AI</p>
+                            <label class="mt-3 block text-xs text-white/60">Generate new slide from prompt</label>
                             <textarea
                                 v-model="aiPrompt"
-                                class="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                                class="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white placeholder:text-white/30"
                                 rows="4"
                                 placeholder="Create a product launch overview slide with title, three bullets, and a callout box."
                             />
                             <button
-                                class="mt-2 w-full rounded bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-black disabled:opacity-60"
+                                class="mt-2 w-full rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-amber-500/25 transition hover:brightness-110 disabled:opacity-60"
                                 type="button"
                                 :disabled="isGeneratingWithAi"
                                 @click="generateSlideWithAi"
@@ -1642,9 +1642,9 @@ onBeforeUnmount(() => {
                                 {{ isGeneratingWithAi ? 'Generating...' : 'Generate AI Slide' }}
                             </button>
 
-                            <div class="mt-4 border-t border-gray-100 pt-3">
-                                <p class="text-xs text-gray-600">Rewrite selected text</p>
-                                <select v-model="aiRewriteMode" class="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-xs">
+                            <div class="mt-4 border-t border-white/10 pt-3">
+                                <p class="text-xs text-white/60">Rewrite selected text</p>
+                                <select v-model="aiRewriteMode" class="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white">
                                     <option value="shorten">Shorten</option>
                                     <option value="expand">Expand</option>
                                     <option value="rephrase">Rephrase</option>
@@ -1653,12 +1653,12 @@ onBeforeUnmount(() => {
                                 <input
                                     v-if="aiRewriteMode === 'tone'"
                                     v-model="aiRewriteTone"
-                                    class="mt-2 w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                                    class="mt-2 w-full rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white placeholder:text-white/30"
                                     type="text"
                                     placeholder="Professional"
                                 >
                                 <button
-                                    class="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                                    class="mt-2 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-medium text-white/80 transition hover:bg-white/10 disabled:opacity-60"
                                     type="button"
                                     :disabled="isRewritingWithAi || !selectedTextElement"
                                     @click="rewriteSelectedTextWithAi"
@@ -1667,18 +1667,18 @@ onBeforeUnmount(() => {
                                 </button>
                             </div>
 
-                            <p class="mt-3 text-xs text-gray-500">
+                            <p class="mt-3 text-xs text-white/40">
                                 AI usage: {{ aiUsage.used_today }} / {{ aiUsage.daily_quota }} today ({{ aiUsage.remaining_today }} left)
                             </p>
                         </div>
 
-                        <div v-if="selectedImageElement" class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Image</p>
+                        <div v-if="selectedImageElement" class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Image</p>
                             <input ref="imageUploadInputRef" class="hidden" type="file" accept="image/*" @change="onImageUploadChange">
 
                             <div class="mt-3 grid grid-cols-2 gap-2">
                                 <button
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50 disabled:opacity-50"
+                                    class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10 disabled:opacity-50"
                                     type="button"
                                     :disabled="isUploadingImage"
                                     @click="openImageUploadDialog"
@@ -1686,7 +1686,7 @@ onBeforeUnmount(() => {
                                     {{ isUploadingImage ? 'Uploading...' : 'Upload' }}
                                 </button>
                                 <button
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+                                    class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10"
                                     type="button"
                                     @click="openImageUploadDialog"
                                 >
@@ -1694,36 +1694,36 @@ onBeforeUnmount(() => {
                                 </button>
                             </div>
 
-                            <label class="mt-3 block text-xs text-gray-600">Fit mode</label>
-                            <select v-model="imageFitValue" class="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-xs" @change="setImageFitMode">
+                            <label class="mt-3 block text-xs text-white/60">Fit mode</label>
+                            <select v-model="imageFitValue" class="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white" @change="setImageFitMode">
                                 <option value="contain">Contain</option>
                                 <option value="cover">Cover</option>
                                 <option value="fill">Fill</option>
                             </select>
 
-                            <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Asset Library</p>
-                            <p v-if="isLoadingAssets" class="mt-2 text-xs text-gray-500">Loading assets...</p>
-                            <div v-else class="mt-2 max-h-36 space-y-1 overflow-y-auto rounded border border-gray-200 p-2">
+                            <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-white/40">Asset Library</p>
+                            <p v-if="isLoadingAssets" class="mt-2 text-xs text-white/40">Loading assets...</p>
+                            <div v-else class="mt-2 max-h-36 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-black/10 p-2">
                                 <button
                                     v-for="asset in projectImageAssets"
                                     :key="asset.id"
-                                    class="block w-full truncate rounded border border-gray-200 px-2 py-1 text-left text-xs text-gray-700 hover:border-gray-400"
+                                    class="block w-full truncate rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-left text-xs text-white/70 transition hover:border-white/30 hover:text-white"
                                     type="button"
                                     @click="useExistingAsset(asset)"
                                 >
                                     {{ asset.original_name }}
                                 </button>
-                                <p v-if="projectImageAssets.length === 0" class="text-xs text-gray-500">No image assets uploaded yet.</p>
+                                <p v-if="projectImageAssets.length === 0" class="text-xs text-white/40">No image assets uploaded yet.</p>
                             </div>
                         </div>
 
-                        <div v-if="selectedVideoElement" class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Video</p>
+                        <div v-if="selectedVideoElement" class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Video</p>
                             <input ref="videoUploadInputRef" class="hidden" type="file" accept="video/*" @change="onVideoUploadChange">
 
                             <div class="mt-3 grid grid-cols-2 gap-2">
                                 <button
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50 disabled:opacity-50"
+                                    class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10 disabled:opacity-50"
                                     type="button"
                                     :disabled="isUploadingVideo"
                                     @click="openVideoUploadDialog"
@@ -1731,7 +1731,7 @@ onBeforeUnmount(() => {
                                     {{ isUploadingVideo ? 'Uploading...' : 'Upload' }}
                                 </button>
                                 <button
-                                    class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+                                    class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10"
                                     type="button"
                                     @click="openVideoUploadDialog"
                                 >
@@ -1739,30 +1739,30 @@ onBeforeUnmount(() => {
                                 </button>
                             </div>
 
-                            <label class="mt-3 block text-xs text-gray-600">Embed URL</label>
-                            <input v-model="videoUrlValue" class="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-xs" type="url" placeholder="https://..." @change="setVideoSource">
+                            <label class="mt-3 block text-xs text-white/60">Embed URL</label>
+                            <input v-model="videoUrlValue" class="mt-1 w-full rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white placeholder:text-white/30" type="url" placeholder="https://..." @change="setVideoSource">
 
-                            <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+                            <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-white/70">
                                 <label class="flex items-center gap-1"><input v-model="videoAutoplayValue" type="checkbox" @change="setVideoPlayback">Autoplay</label>
                                 <label class="flex items-center gap-1"><input v-model="videoMutedValue" type="checkbox" @change="setVideoPlayback">Muted</label>
                                 <label class="flex items-center gap-1"><input v-model="videoLoopValue" type="checkbox" @change="setVideoPlayback">Loop</label>
                             </div>
 
-                            <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Video Assets</p>
-                            <div class="mt-2 max-h-28 space-y-1 overflow-y-auto rounded border border-gray-200 p-2">
+                            <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-white/40">Video Assets</p>
+                            <div class="mt-2 max-h-28 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-black/10 p-2">
                                 <button
                                     v-for="asset in projectVideoAssets"
                                     :key="asset.id"
-                                    class="block w-full truncate rounded border border-gray-200 px-2 py-1 text-left text-xs text-gray-700 hover:border-gray-400"
+                                    class="block w-full truncate rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-left text-xs text-white/70 transition hover:border-white/30 hover:text-white"
                                     type="button"
                                     @click="useExistingVideoAsset(asset)"
                                 >
                                     {{ asset.original_name }}
                                 </button>
-                                <p v-if="projectVideoAssets.length === 0" class="text-xs text-gray-500">No video assets uploaded yet.</p>
+                                <p v-if="projectVideoAssets.length === 0" class="text-xs text-white/40">No video assets uploaded yet.</p>
                             </div>
 
-                            <div v-if="videoUrlValue" class="mt-3 rounded border border-gray-200 p-2">
+                            <div v-if="videoUrlValue" class="mt-3 rounded-xl border border-white/10 bg-black/10 p-2">
                                 <video
                                     v-if="selectedVideoElement.videoType === 'direct'"
                                     class="h-24 w-full rounded object-cover"
@@ -1779,13 +1779,13 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
 
-                        <div v-if="selectedIconElement" class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Icon Picker</p>
+                        <div v-if="selectedIconElement" class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Icon Picker</p>
                             <div class="mt-2 grid grid-cols-4 gap-1">
                                 <button
                                     v-for="glyph in ICON_LIBRARY"
                                     :key="glyph"
-                                    class="rounded border border-gray-300 px-2 py-1 text-lg hover:bg-gray-50"
+                                    class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-lg text-white transition hover:bg-white/10"
                                     type="button"
                                     @click="setIconGlyph(glyph)"
                                 >
@@ -1793,20 +1793,20 @@ onBeforeUnmount(() => {
                                 </button>
                             </div>
 
-                            <label class="mt-3 block text-xs text-gray-600">Icon color</label>
-                            <input v-model="iconColorValue" class="mt-1 h-8 w-full rounded border border-gray-300" type="color" @change="setIconAppearance">
+                            <label class="mt-3 block text-xs text-white/60">Icon color</label>
+                            <input v-model="iconColorValue" class="mt-1 h-8 w-full rounded-xl border border-white/15 bg-white/5" type="color" @change="setIconAppearance">
 
-                            <label class="mt-3 block text-xs text-gray-600">Icon size</label>
+                            <label class="mt-3 block text-xs text-white/60">Icon size</label>
                             <input v-model.number="iconSizeValue" class="mt-1 w-full" type="range" min="24" max="160" step="2" @change="setIconAppearance">
                         </div>
 
-                        <div v-if="selectedElement" class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Style Presets</p>
+                        <div v-if="selectedElement" class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Style Presets</p>
                             <div class="mt-2 space-y-1">
                                 <button
                                     v-for="preset in STYLE_PRESETS"
                                     :key="preset.key"
-                                    class="w-full rounded border border-gray-200 px-2 py-1 text-left text-xs text-gray-700 hover:border-gray-400"
+                                    class="w-full rounded-xl border border-white/10 bg-white/5 px-2 py-1 text-left text-xs text-white/70 transition hover:border-white/30 hover:text-white"
                                     type="button"
                                     @click="applyStylePreset(preset)"
                                 >
@@ -1815,45 +1815,46 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
 
-                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Layers</p>
+                        <p class="mt-6 text-xs font-semibold uppercase tracking-wider text-white/40">Layers</p>
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <button class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" type="button" @click="bringForward">Bring +</button>
-                            <button class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50" type="button" @click="sendBackward">Send -</button>
-                            <button class="col-span-2 rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50" type="button" @click="removeSelected">Delete Selected</button>
+                            <button class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10" type="button" @click="bringForward">Bring +</button>
+                            <button class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 transition hover:bg-white/10" type="button" @click="sendBackward">Send -</button>
+                            <button class="col-span-2 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300 transition hover:bg-red-500/20" type="button" @click="removeSelected">Delete Selected</button>
                         </div>
 
-                        <div v-if="selectedTextElement" class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Rich Text</p>
+                        <div v-if="selectedTextElement" class="mt-6 border-t border-white/10 pt-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-white/40">Rich Text</p>
 
                             <div class="mt-3 flex flex-wrap gap-2">
-                                <button class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" type="button" @click="startTextEditMode(selectedTextElement.id)">
+                                <button class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10" type="button" @click="startTextEditMode(selectedTextElement.id)">
                                     {{ isEditingText ? 'Editing' : 'Edit Text' }}
                                 </button>
-                                <button class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" type="button" @click="setTextAlign('left')">Left</button>
-                                <button class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" type="button" @click="setTextAlign('center')">Center</button>
-                                <button class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" type="button" @click="setTextAlign('right')">Right</button>
+                                <button class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10" type="button" @click="setTextAlign('left')">Left</button>
+                                <button class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10" type="button" @click="setTextAlign('center')">Center</button>
+                                <button class="rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-xs text-white/80 transition hover:bg-white/10" type="button" @click="setTextAlign('right')">Right</button>
                             </div>
 
-                            <label class="mt-3 block text-xs text-gray-600">Font size</label>
+                            <label class="mt-3 block text-xs text-white/60">Font size</label>
                             <input v-model.number="fontSizeValue" class="mt-1 w-full" type="range" min="14" max="96" step="1" @change="setFontSize">
 
-                            <label class="mt-3 block text-xs text-gray-600">Text color</label>
-                            <input v-model="textColor" class="mt-1 h-8 w-full rounded border border-gray-300" type="color" @change="setTextColor">
+                            <label class="mt-3 block text-xs text-white/60">Text color</label>
+                            <input v-model="textColor" class="mt-1 h-8 w-full rounded-xl border border-white/15 bg-white/5" type="color" @change="setTextColor">
 
-                            <label class="mt-3 block text-xs text-gray-600">Line spacing</label>
+                            <label class="mt-3 block text-xs text-white/60">Line spacing</label>
                             <input v-model.number="lineHeightValue" class="mt-1 w-full" type="range" min="1" max="2" step="0.1" @change="setLineHeight">
 
-                            <label class="mt-3 block text-xs text-gray-600">Indentation</label>
+                            <label class="mt-3 block text-xs text-white/60">Indentation</label>
                             <input v-model.number="indentValue" class="mt-1 w-full" type="range" min="0" max="80" step="2" @change="setIndent">
                         </div>
 
-                        <p class="mt-4 text-xs text-gray-500">Tip: Shift+click for multi-select. Drag on empty space for marquee select.</p>
-                        <p v-if="isDirty" class="mt-2 text-xs font-medium text-amber-600">Unsaved changes</p>
-                        <p v-if="errorMessage" class="mt-2 text-xs font-medium text-red-600">{{ errorMessage }}</p>
+                        <p class="mt-4 text-xs text-white/40">Tip: Shift+click for multi-select. Drag on empty space for marquee select.</p>
+                        <p v-if="isDirty" class="mt-2 text-xs font-medium text-amber-300">Unsaved changes</p>
+                        <p v-if="errorMessage" class="mt-2 text-xs font-medium text-red-300">{{ errorMessage }}</p>
                     </aside>
 
-                    <section class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm overflow-auto">
-                        <div class="relative mx-auto w-[1280px] rounded-lg border border-gray-300 bg-white">
+                    <section class="editor-canvas-shell rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-2xl overflow-auto">
+                        <div class="relative mx-auto w-[1280px] rounded-xl border border-white/20 bg-[#0f1323] p-3">
+                            <div class="relative w-[1280px] rounded-lg border border-white/10 bg-white">
                             <v-stage
                                 ref="stageRef"
                                 :config="{ width: STAGE_WIDTH, height: STAGE_HEIGHT }"
@@ -2128,10 +2129,10 @@ onBeforeUnmount(() => {
 
                             <div
                                 v-if="isEditingText && textEditor"
-                                class="absolute rounded border-2 border-blue-500 bg-white/95 p-2 shadow-lg"
+                                class="absolute rounded-xl border-2 border-amber-400 bg-[#111827]/95 p-2 shadow-2xl"
                                 :style="textEditorOverlayStyle"
                             >
-                                <div class="mb-2 flex flex-wrap items-center gap-1 border-b border-gray-200 pb-2">
+                                <div class="mb-2 flex flex-wrap items-center gap-1 border-b border-white/10 pb-2">
                                     <button class="toolbar-btn" type="button" @click="applyEditorCommand((chain) => chain.toggleBold())">B</button>
                                     <button class="toolbar-btn italic" type="button" @click="applyEditorCommand((chain) => chain.toggleItalic())">I</button>
                                     <button class="toolbar-btn underline" type="button" @click="applyEditorCommand((chain) => chain.toggleUnderline())">U</button>
@@ -2142,7 +2143,8 @@ onBeforeUnmount(() => {
                                     <button class="toolbar-btn" type="button" @click="stopTextEditMode(true)">Done</button>
                                 </div>
                                 <EditorContent :editor="textEditor" />
-                                <p class="mt-2 text-[11px] text-gray-500">Press Esc to exit text edit mode.</p>
+                                <p class="mt-2 text-[11px] text-white/50">Press Esc to exit text edit mode.</p>
+                            </div>
                             </div>
                         </div>
                     </section>
@@ -2153,11 +2155,43 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.editor-page {
+    background: radial-gradient(ellipse at top left, rgba(251, 191, 36, 0.08), transparent 42%), radial-gradient(ellipse at bottom right, rgba(249, 115, 22, 0.08), transparent 46%);
+}
+
+.editor-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 191, 36, 0.4) rgba(255, 255, 255, 0.06);
+}
+
+.editor-element-btn {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.86);
+    padding: 0.55rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 120ms ease;
+}
+
+.editor-element-btn:hover {
+    border-color: rgba(251, 191, 36, 0.45);
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.16), rgba(249, 115, 22, 0.16));
+    color: white;
+}
+
+.editor-element-btn:focus-visible {
+    outline: 2px solid rgba(251, 191, 36, 0.7);
+    outline-offset: 2px;
+}
+
 :deep(.rich-text-prosemirror) {
     min-height: 28px;
     outline: none;
     white-space: pre-wrap;
     word-break: break-word;
+    color: rgb(243 244 246);
 }
 
 :deep(.rich-text-prosemirror p) {
@@ -2171,15 +2205,24 @@ onBeforeUnmount(() => {
 }
 
 .toolbar-btn {
-    border: 1px solid rgb(209 213 219);
-    border-radius: 0.375rem;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 0.6rem;
     font-size: 0.75rem;
     line-height: 1rem;
-    padding: 0.2rem 0.45rem;
-    background: white;
+    padding: 0.22rem 0.55rem;
+    background: rgb(255 255 255 / 0.06);
+    color: rgb(243 244 246);
 }
 
 .toolbar-btn:hover {
-    background: rgb(249 250 251);
+    background: rgb(255 255 255 / 0.14);
+}
+
+:deep(.editor-canvas-shell input[type='range']) {
+    accent-color: #f59e0b;
+}
+
+:deep(.editor-canvas-shell input[type='checkbox']) {
+    accent-color: #f59e0b;
 }
 </style>
