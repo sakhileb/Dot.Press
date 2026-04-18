@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="dot_pres.png" alt="Dot.Press Logo" width="180" />
+  <img src="dot_pres.png" alt="Dot.Press Logo" width="200" />
   <h1>Dot.Press</h1>
   <p><strong>Canvas-first presentation builder with AI generation, real-time collaboration, and one-click export.</strong></p>
 
@@ -7,6 +7,8 @@
   ![Vue](https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white)
   ![Inertia](https://img.shields.io/badge/Inertia.js-2.0-purple?logoColor=white)
   ![PHP](https://img.shields.io/badge/PHP-8.3-blue?logo=php&logoColor=white)
+  ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38bdf8?logo=tailwindcss&logoColor=white)
+  ![Tests](https://img.shields.io/badge/tests-52%20passing-brightgreen)
   ![License](https://img.shields.io/badge/license-MIT-green)
 </div>
 
@@ -25,6 +27,7 @@ Key highlights:
 - **Conflict-safe saves** — optimistic concurrency with revision numbers prevents lost edits
 - **PDF & PPTX export** — one-click downloads powered by dompdf and PhpPresentation
 - **Fullscreen presentation mode** — keyboard-navigable, Fullscreen API, Home / End / F shortcuts
+- **Teams & multi-user** — Jetstream-powered team management with roles, invitations, and shared projects
 - **Secure by default** — per-resource policies, CSRF via Sanctum + Inertia, signed asset URLs, MIME allowlist on uploads, and per-user rate limiting on AI and export routes
 
 ---
@@ -35,6 +38,7 @@ Key highlights:
 - [Features](#features)
 - [Architecture](#architecture)
 - [Requirements](#requirements)
+- [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Running the App](#running-the-app)
@@ -43,6 +47,7 @@ Key highlights:
 - [API Reference](#api-reference)
 - [Security](#security)
 - [Roadmap](#roadmap)
+- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -62,7 +67,7 @@ Key highlights:
 | AI provider | Anthropic Claude (via HTTP) |
 | PDF export | barryvdh/laravel-dompdf 3.1 |
 | PPTX export | phpoffice/phppresentation 0.9 |
-| Database | SQLite (dev) / MySQL or PostgreSQL (prod) |
+| Database | SQLite (dev) / MySQL 8 or PostgreSQL 15 (prod) |
 | Cache / Presence | Laravel Cache (file / Redis) |
 | Testing | PHPUnit 12 |
 | PHP | 8.3 |
@@ -71,6 +76,30 @@ Key highlights:
 ---
 
 ## Features
+
+### Authentication & User Management
+
+- **Registration & login** — email/password with email verification
+- **Two-factor authentication (2FA)** — TOTP via Laravel Fortify
+- **Profile management** — update name, email, password, and profile photo
+- **Password reset** — email-delivered reset links
+- **Browser session management** — view and revoke active sessions
+
+### Teams & Collaboration (Jetstream)
+
+- **Team creation & management** — users can own multiple teams and belong to many
+- **Team invitations** — invite collaborators by email; invitees receive a sign-up or join link
+- **Role-based access** — admin and member roles with granular permission checks
+- **Team switching** — switch active team from the user menu without re-logging in
+- **Shared project space** — projects can be scoped to a team so all members can view and edit
+
+### Dashboard & Project Management
+
+- **Project CRUD** — create, rename, describe, and delete projects
+- **Project settings** — per-project JSON settings for defaults (background colour, font, etc.)
+- **Deck management** — each project holds multiple decks, sortable via drag-and-drop
+- **Slide list** — ordered list of slides within a deck; add, reorder, duplicate, or delete slides
+- **Quick editor entry** — one click from the dashboard opens the canvas editor at the first slide
 
 ### Canvas Editor
 
@@ -177,8 +206,11 @@ Key highlights:
 
 | Table | Key columns |
 |---|---|
-| `users` | id, name, email, password |
-| `projects` | id, user_id, name, slug |
+| `users` | id, name, email, password, current_team_id |
+| `teams` | id, user_id (owner), name, personal_team |
+| `team_user` | team_id, user_id, role |
+| `team_invitations` | id, team_id, email, role |
+| `projects` | id, user_id, name, slug, description, settings (JSON) |
 | `decks` | id, project_id, title, sort_order |
 | `slides` | id, deck_id, title, canvas_state (JSON), revision, sort_order |
 | `elements` | id, slide_id, type, props (JSON), sort_order |
@@ -195,6 +227,23 @@ Key highlights:
 - **SQLite** (dev) or **MySQL 8** / **PostgreSQL 15** (prod)
 - **ext-zip** for PPTX export (optional — endpoint returns 503 without it)
 - An **Anthropic API key** for AI features
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/sakhileb/Dot.Press.git && cd Dot.Press
+composer install && npm install
+cp .env.example .env && php artisan key:generate
+touch database/database.sqlite && php artisan migrate
+php artisan storage:link
+# In two terminals:
+php artisan serve
+npm run dev
+```
+
+Open [http://localhost:8000](http://localhost:8000) and register an account.
 
 ---
 
@@ -494,6 +543,20 @@ Returns `409 Conflict` with `server_revision` and `server_canvas_state` when ano
 - [ ] Mobile-responsive editor layout
 - [ ] Slide transition animations for presentation mode
 - [ ] PPTX export with full layout fidelity (requires ext-zip)
+
+---
+
+## Contributing
+
+Contributions are welcome! Please follow the steps below:
+
+1. **Fork** the repository and create a feature branch: `git checkout -b feature/your-feature`
+2. **Write tests** — all new behaviour must be covered by PHPUnit feature tests
+3. **Run the full test suite** and ensure it passes: `php artisan test`
+4. **Lint** your PHP with `./vendor/bin/pint` (Laravel Pint) before committing
+5. Open a **Pull Request** against `main` with a clear description of the change
+
+Please keep PRs focused on a single concern. Large refactors should be discussed in an issue first.
 
 ---
 
