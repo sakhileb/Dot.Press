@@ -1,10 +1,14 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\SlideEditorController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
+    ->name('ecosystem.auth');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
