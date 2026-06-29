@@ -1,75 +1,79 @@
 <div align="center">
 
-<img src="public/dot_pres.png" alt="Dot.Press" width="200" />
+<img src="docs/logo.svg" alt="Dot.Press" width="320" />
 
-<h1>Dot.Press</h1>
+<br /><br />
 
-<p>Canvas-first presentation builder with AI generation, real-time collaboration, and one-click export.</p>
+**Create stunning presentations with AI generation and real-time collaboration.**
 
-[![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat-square&logo=laravel&logoColor=white)](https://laravel.com)
-[![Vue](https://img.shields.io/badge/Vue-3.x-42B883?style=flat-square&logo=vuedotjs&logoColor=white)](https://vuejs.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+<br />
+
+![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=flat-square&logo=laravel&logoColor=white) ![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=flat-square&logo=php&logoColor=white) ![Livewire](https://img.shields.io/badge/Livewire-3-FB70A9?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql&logoColor=white)
+
+<br /><br />
+
+**Part of the [InfoDot Ecosystem](https://github.com/sakhileb/InfoDot)** &nbsp;·&nbsp; `press.infodot.app`
 
 </div>
 
 ---
 
-## Overview
+## What is Dot.Press?
 
-Dot.Press is a fully-featured canvas presentation builder in the Dot ecosystem. Built on a Konva.js canvas engine with TipTap rich-text editing, it enables pixel-perfect slide design, AI-generated content and layouts, real-time collaborative editing, and PDF/PPTX export — all in the browser.
+Dot.Press is the presentation platform in the InfoDot ecosystem. A canvas-first editor lets teams build slide decks with pixel-perfect control; an AI generation layer can produce a full deck from a single prompt, and real-time collaboration keeps everyone in sync.
 
-> **Architecture note:** Dot.Press uses Vue 3 + Inertia.js rather than Livewire 3. The Konva.js canvas engine requires direct DOM manipulation and frame-by-frame rendering that is incompatible with Livewire's server-rendered model.
+## Core Features
 
----
+- Canvas editor — drag-and-drop text, shapes, images, and embeds
+- AI deck generation — describe your presentation, get slides in seconds
+- Real-time collaborative editing via Reverb
+- Slide templates and design themes
+- Speaker notes with presenter view
+- One-click export to PDF and PPTX
+- Share with viewers via public link
+- Ecosystem SSO from InfoDot hub
 
-## Features
+## Domain Models
 
-- **Canvas editor** — Konva.js pixel canvas with shapes, images, text, and custom elements
-- **Rich text** — TipTap editor for slide text with full formatting support
-- **AI generation** — generate slide layouts, copy, and images from a prompt (Anthropic Claude)
-- **Real-time collaboration** — live multi-user editing with cursor presence
-- **Export** — PDF and PPTX one-click export
-- **Templates** — starter template library with customisable themes
-- **Ecosystem SSO** — authenticate from InfoDot with a single click
-
----
+- **Presentation** — titled deck with settings
+- **Slide** — individual canvas with layers
+- **SlideElement** — positioned element (text, image, shape)
+- **PresentationTheme** — reusable design config
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Laravel 12 + PHP 8.4 |
-| Frontend | Vue 3 + Inertia.js + Vite |
-| Canvas | Konva.js |
-| Rich text | TipTap |
-| Auth | Jetstream 5 + Sanctum (ecosystem SSO) |
-| Database | PostgreSQL 16 (shared infodot instance) |
-| WebSockets | Laravel Reverb |
-| AI | Anthropic Claude API |
-
----
+| Framework | Laravel 12 |
+| Language | PHP 8.4 |
+| Frontend | Livewire 3 · Alpine.js 3 · Tailwind CSS |
+| Database | PostgreSQL 16 (shared across ecosystem) |
+| Realtime | Laravel Reverb |
+| Auth | Laravel Sanctum (InfoDot SSO) |
+| AI | Anthropic Claude (`claude-sonnet-4-6`) |
+| Storage | AWS S3 / Local (Flysystem) |
+| Search | Laravel Scout · Meilisearch |
+| Queue | Redis · Laravel Horizon |
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/sakhileb/Dot.Press.git && cd Dot.Press
-composer install && npm install
-cp .env.example .env && php artisan key:generate
-php artisan migrate && npm run dev & php artisan serve
+git clone https://github.com/sakhileb/Dot.Press.git
+cd Dot.Press
+cp .env.example .env
+composer install
+npm install && npm run build
+php artisan key:generate
+php artisan migrate
+php artisan serve
 ```
 
-```bash
-bash bin/test.sh   # Run tests
-```
+> **Ecosystem SSO:** Set `DB_*` env vars to the shared InfoDot PostgreSQL instance and `APP_URL=https://press.infodot.app`. Users authenticated through InfoDot gain access automatically via Sanctum handoff tokens.
 
----
+## Ecosystem
 
-## Part of the Dot Ecosystem
+**Dot.Press** is one of **21 platforms** in the InfoDot ecosystem, connected via shared PostgreSQL and Sanctum SSO. Visit [InfoDot](https://github.com/sakhileb/InfoDot) to explore the full platform map.
 
-Dot.Press connects to [InfoDot](https://github.com/sakhileb/InfoDot) — the central hub. Log in to InfoDot once and navigate here without re-authenticating via `/auth/ecosystem`.
+## License
 
----
-
-MIT — © SK Digital / BluPin Incorporated
+MIT © [SK Digital / BluPin Incorporated](https://github.com/sakhileb)
