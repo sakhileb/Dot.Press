@@ -25,15 +25,15 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        $projects = request()->user()
-            ->projects()
-            ->with(['decks' => fn ($q) => $q->withCount('slides')->orderBy('sort_order')])
-            ->latest('id')
-            ->get();
-
-        return Inertia::render('Dashboard', [
-            'projects' => $projects,
-        ]);
+        $userId = auth()->id();
+        $totalProjects = \App\Models\Project::where('user_id', $userId)->count();
+        $totalDecks = \App\Models\Deck::whereHas('project', fn ($q) => $q->where('user_id', $userId))->count();
+        $templateDecks = \App\Models\Deck::where('is_template', true)
+            ->whereHas('project', fn ($q) => $q->where('user_id', $userId))->count();
+        $totalAssets = \App\Models\Asset::whereHas('project', fn ($q) => $q->where('user_id', $userId))->count();
+        $recentProjects = \App\Models\Project::where('user_id', $userId)
+            ->withCount('decks')->latest()->limit(8)->get();
+        return view('dashboard', compact('totalProjects', 'totalDecks', 'templateDecks', 'totalAssets', 'recentProjects'));
     })->name('dashboard');
 
     Route::get('/editor', [SlideEditorController::class, 'start'])->name('editor.start');
