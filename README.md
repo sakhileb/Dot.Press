@@ -8,7 +8,7 @@
 
 <br />
 
-![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=flat-square&logo=laravel&logoColor=white) ![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=flat-square&logo=php&logoColor=white) ![Livewire](https://img.shields.io/badge/Livewire-3-FB70A9?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?style=flat-square&logo=laravel&logoColor=white) ![PHP](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php&logoColor=white) ![Inertia](https://img.shields.io/badge/Inertia.js%20%2B%20Vue%203-6E4AFF?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 
 <br /><br />
 
@@ -20,40 +20,46 @@
 
 ## What is Dot.Press?
 
-Dot.Press is the presentation platform in the InfoDot ecosystem. A canvas-first editor lets teams build slide decks with pixel-perfect control; an AI generation layer can produce a full deck from a single prompt, and real-time collaboration keeps everyone in sync.
+Dot.Press is a presentation / slide-deck design tool in the InfoDot ecosystem — think Canva's or Google Slides' deck editor, not a newsroom or CMS (despite the ecosystem registry's `newspaper` icon — see `wiki.md` §1 for that naming note). A canvas-first editor (Konva.js) lets a user build slide decks with drag/resize/rotate elements and Tiptap-powered rich text; an AI layer (Anthropic Claude, with an honest mock fallback when no API key is configured) can generate a slide from a prompt or rewrite selected text; lightweight cache-based presence shows who else has a slide open; and decks export to PDF or PPTX.
+
+For a full, code-verified account of what's actually implemented versus aspirational — including a functional bug found and fixed in the dashboard route, and a naming/scope correction on "real-time collaboration" — see [`wiki.md`](wiki.md).
 
 ## Core Features
 
-- Canvas editor — drag-and-drop text, shapes, images, and embeds
-- AI deck generation — describe your presentation, get slides in seconds
-- Real-time collaborative editing via Reverb
-- Slide templates and design themes
-- Speaker notes with presenter view
-- One-click export to PDF and PPTX
-- Share with viewers via public link
-- Ecosystem SSO from InfoDot hub
+- Canvas editor (Konva.js) — drag, resize, rotate text/shape/image elements with an optimistic-concurrency revision check on save
+- AI slide generation and text rewrite (shorten/expand/rephrase/tone), rate-limited and safety-checked, with a working mock provider when no live API key is set
+- Lightweight collaboration presence — see who else is viewing a slide and their cursor/selection (cache-backed heartbeat, not a websocket/live-cursor broadcast)
+- One-click export to PDF (dompdf) and PPTX (PhpPresentation)
+- Ecosystem SSO from the InfoDot hub via `EcosystemAuthController`
 
 ## Domain Models
 
-- **Presentation** — titled deck with settings
-- **Slide** — individual canvas with layers
-- **SlideElement** — positioned element (text, image, shape)
-- **PresentationTheme** — reusable design config
+Source of truth: `app/Models/` and `database/migrations/`.
+
+- **Project** — top-level container, owned by a single user
+- **Deck** — a presentation within a project (title, theme, template flag)
+- **Slide** — one canvas within a deck; canvas content (elements + viewport) is stored as JSON on the slide, with a `revision` counter for conflict detection
+- **Element** — a normalized per-shape table exists and is wired to `Slide`, but the canvas API currently stores all slide content as JSON on `Slide.canvas_state` rather than reading/writing through `Element` rows — see `wiki.md` §3
+- **Asset** — an uploaded file (image/video/audio/PDF), scoped to a project, delivered via signed URL
+- **AiUsageLog** — every AI call, with prompt/response (truncated), tokens, latency, and safety-block status
+
+There is no team-based sharing on the presentation domain yet — `Project`/`Deck`/`Slide`/`Asset` are all scoped by a single `user_id`, not by Jetstream `Team`. Jetstream Teams exist for auth but nothing in the presentation domain is team-shared today.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Laravel 12 |
-| Language | PHP 8.4 |
-| Frontend | Livewire 3 · Alpine.js 3 · Tailwind CSS |
-| Database | PostgreSQL 16 (shared across ecosystem) |
-| Realtime | Laravel Reverb |
-| Auth | Laravel Sanctum (InfoDot SSO) |
-| AI | Anthropic Claude (`claude-sonnet-4-6`) |
-| Storage | AWS S3 / Local (Flysystem) |
-| Search | Laravel Scout · Meilisearch |
-| Queue | Redis · Laravel Horizon |
+| Framework | Laravel 13 |
+| Language | PHP 8.3+ |
+| Frontend | **Inertia.js + Vue 3** (not Livewire — `config/jetstream.php` sets the Inertia stack, and `livewire/livewire` is not a dependency of this app) |
+| Canvas | Konva.js / vue-konva |
+| Rich text | Tiptap 3 |
+| Database | PostgreSQL (shared across the ecosystem, `DB_DATABASE=infodot`) |
+| Collaboration presence | Laravel's cache driver (heartbeat + TTL), not a websocket/broadcast service |
+| Auth | Laravel Sanctum + Jetstream (InfoDot SSO via `/auth/ecosystem`) |
+| AI | Anthropic Claude, direct integration with an `AI_PROVIDER=mock` fallback (`.env.example` default) |
+| Export | `barryvdh/laravel-dompdf` (PDF), `phpoffice/phppresentation` (PPTX) |
+| Storage | Local disk by default (`ASSET_UPLOAD_DISK`), S3-compatible config present but unused in this repo |
 
 ## Quick Start
 

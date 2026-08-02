@@ -25,15 +25,14 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        $userId = auth()->id();
-        $totalProjects = \App\Models\Project::where('user_id', $userId)->count();
-        $totalDecks = \App\Models\Deck::whereHas('project', fn ($q) => $q->where('user_id', $userId))->count();
-        $templateDecks = \App\Models\Deck::where('is_template', true)
-            ->whereHas('project', fn ($q) => $q->where('user_id', $userId))->count();
-        $totalAssets = \App\Models\Asset::whereHas('project', fn ($q) => $q->where('user_id', $userId))->count();
-        $recentProjects = \App\Models\Project::where('user_id', $userId)
-            ->withCount('decks')->latest()->limit(8)->get();
-        return view('dashboard', compact('totalProjects', 'totalDecks', 'templateDecks', 'totalAssets', 'recentProjects'));
+        $projects = \App\Models\Project::where('user_id', auth()->id())
+            ->with(['decks' => fn ($query) => $query->withCount('slides')->orderByDesc('updated_at')])
+            ->latest('id')
+            ->get();
+
+        return Inertia::render('Dashboard', [
+            'projects' => $projects,
+        ]);
     })->name('dashboard');
 
     Route::get('/editor', [SlideEditorController::class, 'start'])->name('editor.start');
