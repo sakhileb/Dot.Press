@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/logo.svg" alt="Dot.Press" width="320" />
+<img src="public/dot_pres.png" alt="Dot.Press" width="220" />
 
 <br /><br />
 
