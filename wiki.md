@@ -1,6 +1,6 @@
 ---
 title: Dot.Press — Platform Wiki
-version: 0.1.0
+version: 0.2.0
 status: draft
 owners: [Press Platform Lead]
 platform-id: dot-press
@@ -124,6 +124,7 @@ Dot.Press is registered in the InfoDot ecosystem map (`InfoDot/config/ecosystem.
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| 0.2.0 | 2026-08-03 | Sakhile Bhayi | Redesigned the marketing surface's background in `resources/js/Pages/Welcome.vue` (this app is Inertia + Vue 3, not Blade, so there is no `welcome.blade.php` — the landing page lives here). The real `dot_pres.png` logo was already wired into the nav and bottom CTA strip from a prior pass, but the hero relied entirely on abstract radial-gradient glow blobs and decorative floating-card mockups with no photographic content. Added a real, licensed Unsplash photo of a creative workspace (MacBook Pro + iMac desk setup) by Domenico Loia (@domenicoloia), unsplash.com/photos/macbook-pro-on-table-beside-white-imac-and-magic-mouse-hGV2TfOh0ns — fitting Dot.Press's actual domain, a canvas-first AI slide-deck design tool (confirmed against wiki.md, not the newspaper/publishing framing corrected in 0.1.0). Hotlinked via Unsplash's CDN, credited inline as an HTML comment, placed under the existing ambient-glow layer at low opacity with a dark gradient overlay so the amber/orange brand gradient and all foreground text keep their existing contrast. Verified the CDN URL resolves (`curl -sI` returned `HTTP/2 200`) before committing. |
 | 0.1.0 | 2026-08-02 | Press Platform Lead | Initial platform-owned wiki. Ecosystem integration pass: verified SSO contract (matches convention) and `DB_DATABASE=infodot`; found and fixed a fatal broken `/dashboard` route (referenced a nonexistent Blade view — restored as a correct `Inertia::render('Dashboard', ...)` call matching the existing `Dashboard.vue` page); removed a dead, Livewire-stack-incompatible `resources/views/layouts/app.blade.php` introduced in the prior commit (this app runs Inertia + Vue, has no `livewire/livewire` dependency); wired sized favicons (`apple-touch-icon.png`, `favicon-32x32.png`, `favicon-16x16.png`) generated via `sips` from the existing `dot_pres.png`, plus `public/images/logo.png`; ran a full security read-through of every by-ID controller action and Policy — found no IDOR gaps, all five domain Policies consistently scope by real ownership; corrected the ecosystem-registry "newspaper"/publishing framing against the actual presentation/slide-deck domain; flagged `TASK_LIST.md`'s Phase 06 collaboration checkmarks as overstating what's actually implemented (cache-based presence + optimistic-lock conflict detection, not live multiplayer). |
 
 ## Open Questions

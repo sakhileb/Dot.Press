@@ -12,6 +12,13 @@ defineProps({
 
     <div class="relative min-h-screen overflow-hidden bg-[#0c0f1a] text-white">
 
+        <!-- Photographic Background: real creative-workspace (MacBook Pro + iMac) photo by Domenico Loia (@domenicoloia), unsplash.com/photos/macbook-pro-on-table-beside-white-imac-and-magic-mouse-hGV2TfOh0ns -->
+        <div
+            class="pointer-events-none absolute inset-0 bg-cover bg-center opacity-40"
+            style="background-image: url('https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=2400&auto=format&fit=crop');"
+        ></div>
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0c0f1a]/80 via-[#0c0f1a]/90 to-[#0c0f1a]"></div>
+
         <!-- ── Ambient background ── -->
         <div class="pointer-events-none absolute inset-0 overflow-hidden">
             <!-- deep radial glow top-left -->
