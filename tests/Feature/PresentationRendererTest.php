@@ -97,8 +97,14 @@ class PresentationRendererTest extends TestCase
             'canvas_state' => ['elements' => []],
         ]);
 
+        // Deck/Slide route-model binding now resolves through the
+        // HasUserScopeThroughOwner global scope, so an intruder's query
+        // finds no row at all -- Laravel throws a 404 before
+        // SlideEditorController::present's explicit authorize() calls
+        // ever run. This is a real improvement over the old 403 (the
+        // route no longer confirms the resource exists to non-owners).
         $this->actingAs($intruder)
             ->get(route('presentation.slides.show', [$deck->id, $slide->id]))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 }

@@ -11,6 +11,9 @@ class SlideController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * No explicit user_id filter needed: Slide's HasUserScopeThroughOwner
+     * trait applies it automatically to every query against this model.
      */
     public function index(Request $request)
     {
@@ -28,9 +31,6 @@ class SlideController extends Controller
         }
 
         return Slide::query()
-            ->whereHas('deck.project', function ($query) use ($request): void {
-                $query->where('user_id', $request->user()->id);
-            })
             ->with('deck')
             ->orderByDesc('id')
             ->paginate(15);

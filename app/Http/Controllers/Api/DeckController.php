@@ -11,6 +11,9 @@ class DeckController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * No explicit user_id filter needed: Deck's HasUserScopeThroughOwner
+     * trait applies it automatically to every query against this model.
      */
     public function index()
     {
@@ -26,9 +29,6 @@ class DeckController extends Controller
         }
 
         return Deck::query()
-            ->whereHas('project', function ($query): void {
-                $query->where('user_id', request()->user()->id);
-            })
             ->with('project')
             ->orderByDesc('id')
             ->paginate(15);

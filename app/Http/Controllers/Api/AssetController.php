@@ -13,6 +13,10 @@ use Throwable;
 
 class AssetController extends Controller
 {
+    /**
+     * No explicit user_id filter needed: Asset's HasUserScopeThroughOwner
+     * trait applies it automatically to every query against this model.
+     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', Asset::class);
@@ -27,10 +31,6 @@ class AssetController extends Controller
             $project = Project::findOrFail($validated['project_id']);
             $this->authorize('view', $project);
             $query->where('project_id', $project->id);
-        } else {
-            $query->whereHas('project', function ($projectQuery) use ($request): void {
-                $projectQuery->where('user_id', $request->user()->id);
-            });
         }
 
         $paginator = $query->latest('id')->paginate(15);

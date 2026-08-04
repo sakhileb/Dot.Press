@@ -82,8 +82,14 @@ class AssetStorageTest extends TestCase
 
         $assetId = $upload->json('asset.id');
 
+        // Asset route-model binding now resolves through the
+        // HasUserScopeThroughOwner global scope, so an intruder's query
+        // finds no row at all -- Laravel throws a 404 before
+        // AssetController::show's explicit authorize() call ever runs.
+        // This is a real improvement over the old 403 (the route no
+        // longer confirms the resource exists to non-owners).
         $this->actingAs($intruder)
             ->getJson('/api/assets/'.$assetId)
-            ->assertForbidden();
+            ->assertNotFound();
     }
 }

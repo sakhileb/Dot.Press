@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUserScopeThroughOwner;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Element extends Model
 {
+    use HasUserScopeThroughOwner;
+
     protected $fillable = [
         'slide_id',
         'type',
@@ -31,5 +34,10 @@ class Element extends Model
     public function slide(): BelongsTo
     {
         return $this->belongsTo(Slide::class);
+    }
+
+    protected static function userOwnershipRelation(): string
+    {
+        return 'slide.deck.project';
     }
 }

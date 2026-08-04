@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUserScopeThroughOwner;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Slide extends Model
 {
+    use HasUserScopeThroughOwner;
+
     protected $fillable = [
         'deck_id',
         'title',
@@ -34,5 +37,10 @@ class Slide extends Model
     public function elements(): HasMany
     {
         return $this->hasMany(Element::class);
+    }
+
+    protected static function userOwnershipRelation(): string
+    {
+        return 'deck.project';
     }
 }
