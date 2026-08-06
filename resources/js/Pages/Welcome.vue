@@ -1,225 +1,279 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
 
 defineProps({
     canLogin: { type: Boolean },
     canRegister: { type: Boolean },
 });
+
+const mobileMenuOpen = ref(false);
+const scrolled = ref(false);
+
+const features = [
+    { tag: 'Canvas', title: 'Canvas editor', body: 'Drag, resize, and rotate elements on a Konva.js stage, with snapping, z-index control, and undo/redo.' },
+    { tag: 'AI', title: 'AI-assisted generation', body: 'Describe a slide in plain English and get a first draft — copy, layout, and styling — to start from instead of a blank canvas.' },
+    { tag: 'Presence', title: 'Live presence, safe conflicts', body: 'See who else is viewing a slide right now. If two edits collide, you get a conflict warning instead of a silent overwrite.' },
+    { tag: 'Export', title: 'One-click export', body: 'Download a deck as PDF or a native PowerPoint PPTX file — shareable anywhere, any device.' },
+    { tag: 'Text', title: 'Rich text engine', body: 'Tiptap-powered inline editing with font controls, colors, alignment, and lists, without leaving the canvas.' },
+    { tag: 'Present', title: 'Presentation mode', body: 'A full-screen presenter view with keyboard navigation and a single-key fullscreen toggle.' },
+];
+
+onMounted(() => {
+    const onScroll = () => { scrolled.value = window.pageYOffset > 24; };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+    } else {
+        document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
+    }
+});
 </script>
 
 <template>
-    <Head title="Dot.Press — Beautiful Presentations, Powered by AI" />
+    <Head title="Dot.Press — The canvas-first presentation tool for the Dot Ecosystem">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <meta name="description" content="A canvas-first presentation platform with AI-assisted generation, live presence, and one-click PDF & PPTX export. Go from idea to deck in minutes.">
+    </Head>
 
-    <div class="relative min-h-screen overflow-hidden bg-[#0c0f1a] text-white">
+    <div class="press-page antialiased min-h-screen">
 
-        <!-- Photographic Background: real creative-workspace (MacBook Pro + iMac) photo by Domenico Loia (@domenicoloia), unsplash.com/photos/macbook-pro-on-table-beside-white-imac-and-magic-mouse-hGV2TfOh0ns -->
-        <div
-            class="pointer-events-none absolute inset-0 bg-cover bg-center opacity-40"
-            style="background-image: url('https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=2400&auto=format&fit=crop');"
-        ></div>
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0c0f1a]/80 via-[#0c0f1a]/90 to-[#0c0f1a]"></div>
-
-        <!-- ── Ambient background ── -->
-        <div class="pointer-events-none absolute inset-0 overflow-hidden">
-            <!-- deep radial glow top-left -->
-            <div class="absolute -top-40 -left-40 h-[700px] w-[700px] rounded-full bg-amber-400/10 blur-[120px]"></div>
-            <!-- deep radial glow bottom-right -->
-            <div class="absolute -bottom-32 -right-32 h-[600px] w-[600px] rounded-full bg-orange-500/10 blur-[120px]"></div>
-            <!-- subtle center glow -->
-            <div class="absolute top-1/2 left-1/2 h-[400px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/5 blur-[100px]"></div>
-
-            <!-- grid overlay -->
-            <div
-                class="absolute inset-0 opacity-[0.04]"
-                style="background-image: linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px); background-size: 60px 60px;"
-            ></div>
-
-            <!-- floating slide cards — decorative -->
-            <div class="absolute top-28 right-[-60px] w-64 rotate-6 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-sm lg:right-24 xl:right-40">
-                <div class="mb-3 h-2 w-24 rounded-full bg-amber-400/60"></div>
-                <div class="mb-2 h-2 w-40 rounded-full bg-white/20"></div>
-                <div class="mb-2 h-2 w-32 rounded-full bg-white/10"></div>
-                <div class="mt-4 h-20 rounded-lg bg-gradient-to-br from-amber-400/20 to-orange-500/20"></div>
-            </div>
-            <div class="absolute top-56 right-8 w-52 -rotate-3 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-sm lg:right-12 xl:right-28">
-                <div class="mb-3 h-2 w-16 rounded-full bg-orange-400/60"></div>
-                <div class="mt-4 h-16 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-300/20"></div>
-                <div class="mt-3 h-2 w-28 rounded-full bg-white/20"></div>
-            </div>
-            <div class="absolute bottom-24 left-[-40px] w-56 -rotate-6 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-sm lg:left-20 xl:left-36">
-                <div class="mb-3 h-2 w-20 rounded-full bg-amber-300/60"></div>
-                <div class="mb-2 h-2 w-36 rounded-full bg-white/10"></div>
-                <div class="mt-4 h-14 rounded-lg bg-gradient-to-br from-amber-400/15 to-orange-400/15"></div>
-            </div>
-        </div>
-
-        <!-- ── Navigation ── -->
-        <nav class="relative z-10 flex items-center justify-between px-6 py-6 sm:px-12 lg:px-20">
-            <div class="flex items-center gap-3">
-                <img src="/dot_pres.png" alt="Dot.Press logo" class="h-10 w-auto drop-shadow-lg" />
-            </div>
-
-            <div v-if="canLogin" class="flex items-center gap-3">
-                <Link
-                    v-if="$page.props.auth.user"
-                    :href="route('dashboard')"
-                    class="rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
-                >
-                    Dashboard →
+        <!-- Nav -->
+        <header
+            :class="scrolled ? 'bg-[#180f08]/95 backdrop-blur-md border-b border-[var(--line)]' : 'border-b border-transparent'"
+            class="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
+        >
+            <nav class="max-w-[1400px] mx-auto px-5 sm:px-8 py-3 flex items-center justify-between">
+                <Link href="/" class="flex items-center gap-2.5 press-btn">
+                    <img src="/images/logo.png" alt="Dot.Press" class="h-14 sm:h-[4.5rem] w-auto">
                 </Link>
-                <template v-else>
-                    <Link
-                        :href="route('login')"
-                        class="rounded-xl px-5 py-2.5 text-sm font-medium text-white/80 transition hover:text-white"
-                    >
+
+                <div class="hidden md:flex items-center gap-8 font-mono text-[13px] tracking-wide uppercase text-[var(--mist)]">
+                    <a href="#capabilities" class="link-underline hover:text-[var(--paper)] pb-0.5">Capabilities</a>
+                    <a href="#workflow" class="link-underline hover:text-[var(--paper)] pb-0.5">Workflow</a>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <template v-if="$page.props.auth.user">
+                        <Link :href="route('dashboard')" class="press-btn flex items-center gap-2 px-5 py-2.5 bg-[var(--gold)] hover:bg-[var(--gold-soft)] text-[#180f08] text-sm font-display font-semibold rounded-lg transition-colors">
+                            Dashboard
+                        </Link>
+                    </template>
+                    <template v-else>
+                        <Link v-if="canLogin" :href="route('login')" class="hidden sm:block text-sm font-medium text-[var(--mist)] hover:text-[var(--paper)] transition-colors">
+                            Sign in
+                        </Link>
+                        <Link v-if="canRegister" :href="route('register')" class="press-btn px-5 py-2.5 bg-[var(--gold)] hover:bg-[var(--gold-soft)] text-[#180f08] text-sm font-display font-semibold rounded-lg transition-colors">
+                            Get started
+                        </Link>
+                    </template>
+
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden press-btn p-2 -mr-2 text-[var(--paper)]" aria-label="Toggle menu" :aria-expanded="mobileMenuOpen">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 7h16M4 12h16M4 17h16" />
+                            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+
+            <div v-show="mobileMenuOpen" class="md:hidden border-t border-[var(--line)] bg-[#180f08]">
+                <div class="flex flex-col px-5 py-4 gap-1 font-mono text-sm uppercase tracking-wide">
+                    <a href="#capabilities" class="px-3 py-2.5 text-[var(--mist)] hover:text-[var(--paper)]">Capabilities</a>
+                    <a href="#workflow" class="px-3 py-2.5 text-[var(--mist)] hover:text-[var(--paper)]">Workflow</a>
+                    <Link v-if="canLogin && !$page.props.auth.user" :href="route('login')" class="px-3 py-2.5 text-[var(--mist)] hover:text-[var(--paper)]">Sign in</Link>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero -->
+        <section class="relative min-h-[100dvh] flex items-end overflow-hidden">
+            <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 15% 0%, rgba(232,137,15,0.14) 0%, transparent 60%), var(--ink);"></div>
+
+            <!-- Signature element: line-art easel + rising line — echoes the logo's own presentation-board icon -->
+            <svg class="hidden lg:block absolute right-[5%] bottom-[8%] h-[62%] w-auto opacity-[0.16] pointer-events-none" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="20" y="30" width="200" height="120" rx="10" stroke="#f5efe4" stroke-width="4"/>
+                <path d="M60 115L100 80L130 105L180 55" stroke="#e8890f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M100 150L85 230M140 150L155 230" stroke="#f5efe4" stroke-width="4" stroke-linecap="round"/>
+                <path d="M75 230H165" stroke="#f5efe4" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+
+            <div class="relative z-10 max-w-[1400px] mx-auto px-5 sm:px-8 pt-32 pb-16 sm:pb-20 w-full">
+                <div class="max-w-2xl reveal" data-reveal>
+                    <p class="font-mono text-xs tracking-[0.18em] uppercase text-[var(--orange)] mb-6">
+                        Canvas-first presentation tool
+                    </p>
+
+                    <h1 class="font-display font-semibold text-4xl sm:text-5xl lg:text-6xl leading-[1.08] tracking-tight text-[var(--paper)] mb-6">
+                        Slides that look designed,<br>not defaulted.
+                    </h1>
+
+                    <p class="text-lg text-[var(--mist)] leading-relaxed max-w-xl mb-10">
+                        Build decks on a real canvas — text, shapes, and images you position by hand — with AI-assisted drafting when you want a starting point, and one-click export to PDF or PPTX when you're done.
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-4">
+                        <Link v-if="canRegister" :href="route('register')" class="press-btn px-7 py-3.5 bg-[var(--gold)] hover:bg-[var(--gold-soft)] text-[#180f08] font-display font-semibold rounded-lg transition-colors">
+                            Start building
+                        </Link>
+                        <a href="#capabilities" class="press-btn flex items-center gap-2 px-7 py-3.5 text-[var(--paper)] font-medium rounded-lg border border-[var(--line)] hover:border-[var(--mist)] transition-colors">
+                            See what it does
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Element strip — real canvas primitives, not fabricated metrics -->
+            <div class="relative z-10 w-full border-t border-[var(--line)] bg-[#180f08]/60 backdrop-blur-sm">
+                <div class="max-w-[1400px] mx-auto px-5 sm:px-8 py-4 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--mist)]">
+                    <span>Text</span>
+                    <span class="text-[var(--orange)]">·</span>
+                    <span>Shapes</span>
+                    <span class="text-[var(--orange)]">·</span>
+                    <span>Images</span>
+                    <span class="text-[var(--orange)]">·</span>
+                    <span>PDF export</span>
+                    <span class="text-[var(--orange)]">·</span>
+                    <span>PPTX export</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="capabilities" class="py-24 sm:py-28 px-5 sm:px-8">
+            <div class="max-w-[1400px] mx-auto">
+                <div class="max-w-xl mb-16 reveal" data-reveal>
+                    <p class="font-mono text-xs tracking-[0.18em] uppercase text-[var(--orange)] mb-4">What it does</p>
+                    <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--paper)] leading-tight">
+                        Everything a deck needs, on one canvas
+                    </h2>
+                </div>
+
+                <div class="grid md:grid-cols-2 border-t border-[var(--line)]">
+                    <div v-for="(f, i) in features" :key="f.title" :class="['row-hover border-b border-[var(--line)] px-1 py-8 sm:py-10 transition-colors reveal', i % 2 === 0 ? 'md:border-r' : '']" data-reveal>
+                        <p class="font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--orange)] mb-3">{{ f.tag }}</p>
+                        <h3 class="font-display font-semibold text-xl text-[var(--paper)] mb-2.5">{{ f.title }}</h3>
+                        <p class="text-[var(--mist)] leading-relaxed max-w-md">{{ f.body }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow -->
+        <section id="workflow" class="py-24 sm:py-28 px-5 sm:px-8 bg-[var(--ink-soft)] border-y border-[var(--line)]">
+            <div class="max-w-[1400px] mx-auto">
+                <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] gap-12 lg:gap-20">
+                    <div class="reveal" data-reveal>
+                        <p class="font-mono text-xs tracking-[0.18em] uppercase text-[var(--orange)] mb-4">From idea to deck</p>
+                        <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--paper)] leading-tight mb-5">
+                            A project holds every deck you build
+                        </h2>
+                        <p class="text-[var(--mist)] leading-relaxed max-w-sm">
+                            Projects contain decks, decks contain slides, slides hold the elements you place — one straightforward structure, no folders to invent.
+                        </p>
+                    </div>
+
+                    <div class="reveal overflow-x-auto" data-reveal>
+                        <div class="flex items-stretch gap-0 min-w-[520px] font-mono text-xs uppercase tracking-[0.1em]">
+                            <div v-for="(s, i) in [
+                                    { label: 'Project', note: 'A container for related decks' },
+                                    { label: 'Deck', note: 'A presentation, with its own theme' },
+                                    { label: 'Slide', note: 'One canvas — layout and elements' },
+                                    { label: 'Export', note: 'PDF or PPTX, ready to share' },
+                                ]" :key="s.label" :class="['flex-1', i > 0 ? 'border-l border-[var(--line)] pl-5' : '', i < 3 ? 'pr-5' : '']">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="text-[var(--gold)]">{{ String(i + 1).padStart(2, '0') }}</span>
+                                    <span class="text-[var(--paper)] font-display normal-case text-sm font-semibold tracking-normal">{{ s.label }}</span>
+                                </div>
+                                <p class="text-[var(--mist)] normal-case tracking-normal leading-relaxed">{{ s.note }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="relative py-28 sm:py-36 px-5 sm:px-8 overflow-hidden">
+            <div class="absolute inset-0" style="background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(240,195,58,0.08) 0%, transparent 65%), var(--ink);"></div>
+
+            <div class="relative z-10 max-w-2xl mx-auto text-center reveal" data-reveal>
+                <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--paper)] leading-tight mb-5">
+                    Go from idea to deck in minutes
+                </h2>
+                <p class="text-[var(--mist)] leading-relaxed mb-10 max-w-lg mx-auto">
+                    Start on a blank canvas, or let AI draft a first pass. Either way, you're exporting a real deck by the end.
+                </p>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <Link v-if="canRegister" :href="route('register')" class="press-btn px-8 py-3.5 bg-[var(--gold)] hover:bg-[var(--gold-soft)] text-[#180f08] font-display font-semibold rounded-lg transition-colors">
+                        Create your first deck
+                    </Link>
+                    <Link v-if="canLogin" :href="route('login')" class="press-btn px-8 py-3.5 text-[var(--paper)] font-medium rounded-lg border border-[var(--line)] hover:border-[var(--mist)] transition-colors">
                         Sign in
                     </Link>
-                    <Link
-                        v-if="canRegister"
-                        :href="route('register')"
-                        class="rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 transition hover:brightness-110"
-                    >
-                        Get started free
-                    </Link>
-                </template>
+                </div>
             </div>
-        </nav>
+        </section>
 
-        <!-- ── Hero ── -->
-        <main class="relative z-10 flex flex-col items-center px-6 pb-24 pt-16 text-center sm:px-12 lg:pt-28">
-
-            <!-- Badge -->
-            <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
-                <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                AI-Powered Presentation Builder
+        <!-- Footer -->
+        <footer class="py-14 px-5 sm:px-8 border-t border-[var(--line)]">
+            <div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+                <Link href="/" class="flex items-center gap-2.5">
+                    <img src="/images/logo.png" alt="Dot.Press" class="h-11 w-auto opacity-90">
+                </Link>
+                <p class="font-mono text-xs tracking-wide text-[var(--mist)]">
+                    &copy; {{ new Date().getFullYear() }} Dot.Press. The canvas-first presentation tool for the Dot Ecosystem.
+                </p>
             </div>
-
-            <!-- Headline -->
-            <h1 class="mx-auto max-w-4xl text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
-                Slides that
-                <span class="bg-gradient-to-r from-amber-300 via-orange-400 to-orange-500 bg-clip-text text-transparent">
-                    tell your story
-                </span>
-                <br />beautifully.
-            </h1>
-
-            <p class="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/60">
-                Dot.Press is a canvas-first presentation platform with built-in AI generation, real-time collaboration, and one-click PDF&nbsp;&amp;&nbsp;PPTX export. Go from idea to deck in minutes.
-            </p>
-
-            <!-- CTAs -->
-            <div class="mt-12 flex flex-wrap items-center justify-center gap-4">
-                <Link
-                    v-if="canRegister"
-                    :href="route('register')"
-                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-4 text-base font-bold text-white shadow-xl shadow-amber-500/30 transition hover:brightness-110 active:scale-95"
-                >
-                    <span class="relative z-10">Start building for free</span>
-                </Link>
-                <Link
-                    v-if="canLogin && !$page.props.auth.user"
-                    :href="route('login')"
-                    class="rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white/90 backdrop-blur-sm transition hover:border-white/40 hover:bg-white/10 active:scale-95"
-                >
-                    Sign in to your account
-                </Link>
-                <Link
-                    v-if="$page.props.auth.user"
-                    :href="route('dashboard')"
-                    class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-4 text-base font-bold text-white shadow-xl shadow-amber-500/30 transition hover:brightness-110 active:scale-95"
-                >
-                    Go to Dashboard →
-                </Link>
-            </div>
-
-            <!-- Social proof -->
-            <p class="mt-8 text-sm text-white/30">No credit card required &bull; Unlimited decks on free plan</p>
-
-            <!-- ── Feature grid ── -->
-            <div class="mx-auto mt-28 grid max-w-5xl gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
-
-                <div class="group rounded-2xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition hover:border-amber-400/30 hover:bg-white/8">
-                    <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-500/20">
-                        <!-- canvas icon -->
-                        <svg class="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                    </div>
-                    <h3 class="mb-2 text-base font-semibold text-white">Canvas Editor</h3>
-                    <p class="text-sm leading-relaxed text-white/50">Drag, resize, rotate elements on a pixel-perfect Konva.js stage with snapping, z-index control, and undo/redo.</p>
-                </div>
-
-                <div class="group rounded-2xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition hover:border-amber-400/30 hover:bg-white/8">
-                    <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-500/20">
-                        <!-- AI icon -->
-                        <svg class="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path stroke-linecap="round" d="M18 2v4M20 4h-4"/></svg>
-                    </div>
-                    <h3 class="mb-2 text-base font-semibold text-white">AI Generation</h3>
-                    <p class="text-sm leading-relaxed text-white/50">Describe your slide in plain English. Our Claude-powered engine writes the copy, lays out elements, and styles them instantly.</p>
-                </div>
-
-                <div class="group rounded-2xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition hover:border-amber-400/30 hover:bg-white/8">
-                    <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-500/20">
-                        <!-- collab icon -->
-                        <svg class="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 0 1 4-4h4"/><circle cx="17" cy="11" r="3"/><path d="M21 21v-2a4 4 0 0 0-4-4h-0"/></svg>
-                    </div>
-                    <h3 class="mb-2 text-base font-semibold text-white">Real-time Collaboration</h3>
-                    <p class="text-sm leading-relaxed text-white/50">See teammates' live cursors, presence indicators, and resolve edit conflicts automatically with optimistic concurrency.</p>
-                </div>
-
-                <div class="group rounded-2xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition hover:border-amber-400/30 hover:bg-white/8">
-                    <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-500/20">
-                        <!-- export icon -->
-                        <svg class="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>
-                    </div>
-                    <h3 class="mb-2 text-base font-semibold text-white">One-click Export</h3>
-                    <p class="text-sm leading-relaxed text-white/50">Download your deck as a pixel-perfect PDF or a native PowerPoint PPTX file — shareable anywhere, any device.</p>
-                </div>
-
-                <div class="group rounded-2xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition hover:border-amber-400/30 hover:bg-white/8">
-                    <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-500/20">
-                        <!-- rich text icon -->
-                        <svg class="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h12"/></svg>
-                    </div>
-                    <h3 class="mb-2 text-base font-semibold text-white">Rich Text Engine</h3>
-                    <p class="text-sm leading-relaxed text-white/50">Tiptap-powered inline editing with font controls, colors, alignment, lists, and spacing — all without leaving the canvas.</p>
-                </div>
-
-                <div class="group rounded-2xl border border-white/10 bg-white/5 p-7 backdrop-blur-sm transition hover:border-amber-400/30 hover:bg-white/8">
-                    <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-500/20">
-                        <!-- present icon -->
-                        <svg class="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 10l4.553-2.07A1 1 0 0 1 21 8.85v6.3a1 1 0 0 1-1.447.92L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8Z"/></svg>
-                    </div>
-                    <h3 class="mb-2 text-base font-semibold text-white">Presentation Mode</h3>
-                    <p class="text-sm leading-relaxed text-white/50">Full-screen presenter view with smooth keyboard navigation, Home/End shortcuts, and a single-key fullscreen toggle.</p>
-                </div>
-
-            </div>
-
-            <!-- ── Bottom CTA strip ── -->
-            <div class="mx-auto mt-24 w-full max-w-3xl rounded-3xl border border-amber-400/20 bg-gradient-to-br from-amber-400/10 via-orange-500/5 to-transparent p-12 text-center backdrop-blur-sm">
-                <img src="/dot_pres.png" alt="Dot.Press" class="mx-auto mb-6 h-16 w-auto drop-shadow-xl" />
-                <h2 class="text-3xl font-bold text-white">Ready to impress?</h2>
-                <p class="mt-3 text-white/50">Join thousands of creators building stunning decks with Dot.Press.</p>
-                <Link
-                    v-if="canRegister"
-                    :href="route('register')"
-                    class="mt-8 inline-block rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-10 py-4 text-base font-bold text-white shadow-xl shadow-amber-500/25 transition hover:brightness-110 active:scale-95"
-                >
-                    Create your first deck →
-                </Link>
-                <Link
-                    v-else
-                    :href="route('login')"
-                    class="mt-8 inline-block rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-10 py-4 text-base font-bold text-white shadow-xl shadow-amber-500/25 transition hover:brightness-110 active:scale-95"
-                >
-                    Sign in to get started →
-                </Link>
-            </div>
-        </main>
-
-        <!-- ── Footer ── -->
-        <footer class="relative z-10 border-t border-white/5 px-6 py-8 text-center text-sm text-white/25">
-            &copy; {{ new Date().getFullYear() }} Dot.Press. All rights reserved.
         </footer>
     </div>
 </template>
 
+<style>
+.press-page {
+    --ink: #180f08;
+    --ink-soft: #201409;
+    --gold: #f0c33a;
+    --gold-soft: #f5d573;
+    --orange: #e8890f;
+    --orange-soft: #f0a13f;
+    --paper: #f5efe4;
+    --mist: #b8a692;
+    --line: rgba(245, 239, 228, 0.1);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Public Sans', system-ui, sans-serif;
+    --font-mono: 'Roboto Mono', ui-monospace, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    font-family: var(--font-body);
+    background: var(--ink);
+    color: var(--paper);
+}
+.press-page .font-display { font-family: var(--font-display); font-optical-sizing: auto; }
+.press-page .font-mono { font-family: var(--font-mono); }
+.press-page .press-btn { transition: transform 160ms var(--ease-out); }
+.press-page .press-btn:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: no-preference) {
+    .press-page .reveal { opacity: 0; transform: translateY(14px); transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
+    .press-page .reveal.is-visible { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) { .press-page .reveal { opacity: 1; transform: none; } }
+@media (hover: hover) and (pointer: fine) {
+    .press-page .row-hover:hover { background: rgba(245, 239, 228, 0.03); }
+    .press-page .link-underline { background-size: 0% 1px; }
+    .press-page .link-underline:hover { background-size: 100% 1px; }
+}
+.press-page .link-underline { background-image: linear-gradient(currentColor, currentColor); background-position: 0 100%; background-repeat: no-repeat; transition: background-size 220ms var(--ease-out); }
+</style>
