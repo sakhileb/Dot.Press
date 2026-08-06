@@ -45,6 +45,8 @@ const submit = () => {
             <AuthenticationCardLogo />
         </template>
 
+        <h1 class="font-display font-semibold text-2xl mb-4">Two-factor authentication</h1>
+
         <div class="mb-4 text-sm text-gray-600">
             <template v-if="! recovery">
                 Please confirm access to your account by entering the authentication code provided by your authenticator application.

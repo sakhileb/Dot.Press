@@ -100,7 +100,11 @@ onMounted(() => {
 
         <!-- Hero -->
         <section class="relative min-h-[100dvh] flex items-end overflow-hidden">
-            <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 15% 0%, rgba(232,137,15,0.14) 0%, transparent 60%), var(--ink);"></div>
+            <!-- Photo: designer working across a canvas of colorful slide/card layouts, by Swello, unsplash.com/photos/J4LeErSKC_0 -->
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1759215524484-89c8d7ae28f2?q=80&w=2400&auto=format&fit=crop');"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(24,15,8,0.55) 0%, rgba(24,15,8,0.75) 45%, #180f08 92%);"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(90deg, #180f08 0%, rgba(24,15,8,0.6) 40%, transparent 70%);"></div>
+            <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 15% 0%, rgba(232,137,15,0.14) 0%, transparent 60%);"></div>
 
             <!-- Signature element: line-art easel + rising line — echoes the logo's own presentation-board icon -->
             <svg class="hidden lg:block absolute right-[5%] bottom-[8%] h-[62%] w-auto opacity-[0.16] pointer-events-none" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -207,7 +211,10 @@ onMounted(() => {
 
         <!-- CTA -->
         <section class="relative py-28 sm:py-36 px-5 sm:px-8 overflow-hidden">
-            <div class="absolute inset-0" style="background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(240,195,58,0.08) 0%, transparent 65%), var(--ink);"></div>
+            <!-- Photo: a presenter at full-screen deck in front of an audience, by Teemu Paananen, unsplash.com/photos/bzdhc5b3Bxs -->
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2400&auto=format&fit=crop');"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, #180f08 0%, rgba(24,15,8,0.85) 50%, #180f08 100%);"></div>
+            <div class="absolute inset-0" style="background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(240,195,58,0.08) 0%, transparent 65%);"></div>
 
             <div class="relative z-10 max-w-2xl mx-auto text-center reveal" data-reveal>
                 <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--paper)] leading-tight mb-5">

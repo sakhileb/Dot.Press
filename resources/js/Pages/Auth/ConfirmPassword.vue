@@ -33,6 +33,7 @@ const submit = () => {
             <AuthenticationCardLogo />
         </template>
 
+        <h1 class="font-display font-semibold text-2xl mb-1">Confirm your password</h1>
         <div class="mb-4 text-sm text-gray-600">
             This is a secure area of the application. Please confirm your password before continuing.
         </div>

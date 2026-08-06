@@ -34,6 +34,8 @@ const submit = () => {
             <AuthenticationCardLogo />
         </template>
 
+        <h1 class="font-display font-semibold text-2xl mb-6">Choose a new password</h1>
+
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="email" value="Email" />
