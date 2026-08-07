@@ -241,6 +241,11 @@ onMounted(() => {
                 <Link href="/" class="flex items-center gap-2.5">
                     <img src="/images/logo.png" alt="Dot.Press" class="h-11 w-auto opacity-90">
                 </Link>
+                <div class="flex items-center gap-6 font-mono text-xs tracking-wide uppercase text-[var(--mist)]">
+                    <Link :href="route('policy.show')" class="hover:text-[var(--paper)] transition-colors">Privacy</Link>
+                    <Link :href="route('cookies')" class="hover:text-[var(--paper)] transition-colors">Cookies</Link>
+                    <Link :href="route('terms.show')" class="hover:text-[var(--paper)] transition-colors">Terms</Link>
+                </div>
                 <p class="font-mono text-xs tracking-wide text-[var(--mist)]">
                     &copy; {{ new Date().getFullYear() }} Dot.Press. The canvas-first presentation tool for the Dot Ecosystem.
                 </p>

@@ -5,7 +5,9 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\SlideEditorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Laravel\Jetstream\Jetstream;
 
 Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
     ->name('ecosystem.auth');
@@ -18,6 +20,17 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+// Cookie Policy — Jetstream's termsAndPrivacyPolicy feature covers terms.show/policy.show
+// natively (registered at /terms-of-service and /privacy-policy, rendering the Inertia
+// PrivacyPolicy/TermsOfService pages from resources/markdown/{terms,policy}.md). There's no
+// Jetstream equivalent for a Cookie Policy, so this one is wired by hand, following the exact
+// same Markdown-source + Inertia::render convention.
+Route::get('/cookies', function () {
+    return Inertia::render('CookiePolicy', [
+        'cookies' => Str::markdown(file_get_contents(Jetstream::localizedMarkdownPath('cookies.md'))),
+    ]);
+})->name('cookies');
 
 Route::middleware([
     'auth:sanctum',

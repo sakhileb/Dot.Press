@@ -9,12 +9,18 @@ import { Head } from '@inertiajs/vue3';
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     </Head>
 
-    <div class="press-auth min-h-screen flex flex-col justify-center items-center px-5 py-12">
-        <div class="mb-8">
+    <div class="press-auth relative min-h-screen flex flex-col justify-center items-center px-5 py-12 overflow-hidden">
+        <!-- Same hero photo as Welcome.vue (designer working across a canvas of colorful slide/card
+        layouts, by Swello, unsplash.com/photos/J4LeErSKC_0), with the same dark-ink scrim. -->
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1759215524484-89c8d7ae28f2?q=80&w=2400&auto=format&fit=crop');"></div>
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse 68% 62% at 50% 40%, rgba(24,15,8,0.9) 0%, rgba(24,15,8,0.68) 45%, rgba(24,15,8,0.35) 74%, rgba(24,15,8,0.12) 100%);"></div>
+        <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(24,15,8,0.6) 0%, transparent 18%, transparent 74%, rgba(24,15,8,0.5) 100%);"></div>
+
+        <div class="relative z-10 mb-8">
             <slot name="logo" />
         </div>
 
-        <div class="press-auth-card w-full sm:max-w-md px-6 py-8 sm:px-8 rounded-2xl shadow-xl">
+        <div class="press-auth-card relative z-10 w-full sm:max-w-md px-6 py-8 sm:px-8 rounded-2xl shadow-xl">
             <slot />
         </div>
     </div>
