@@ -57,7 +57,7 @@ onMounted(() => {
         >
             <nav class="max-w-[1400px] mx-auto px-5 sm:px-8 py-3 flex items-center justify-between">
                 <Link href="/" class="flex items-center gap-2.5 press-btn">
-                    <img src="/images/logo.png" alt="Dot.Press" class="h-14 sm:h-[4.5rem] w-auto">
+                    <img src="/images/logo-light.png" alt="Dot.Press" class="h-14 sm:h-[4.5rem] w-auto">
                 </Link>
 
                 <div class="hidden md:flex items-center gap-8 font-mono text-[13px] tracking-wide uppercase text-[var(--mist)]">
@@ -239,7 +239,7 @@ onMounted(() => {
         <footer class="py-14 px-5 sm:px-8 border-t border-[var(--line)]">
             <div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
                 <Link href="/" class="flex items-center gap-2.5">
-                    <img src="/images/logo.png" alt="Dot.Press" class="h-11 w-auto opacity-90">
+                    <img src="/images/logo-light.png" alt="Dot.Press" class="h-11 w-auto opacity-90">
                 </Link>
                 <div class="flex items-center gap-6 font-mono text-xs tracking-wide uppercase text-[var(--mist)]">
                     <Link :href="route('policy.show')" class="hover:text-[var(--paper)] transition-colors">Privacy</Link>
