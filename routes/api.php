@@ -1,13 +1,13 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AiController;
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\CollaborationController;
 use App\Http\Controllers\Api\DeckController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\SlideController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();

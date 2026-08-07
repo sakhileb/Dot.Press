@@ -38,12 +38,12 @@ class ExportController extends Controller
         ]);
         $this->authorize('view', $deck);
 
-        $presentation = new PhpPresentation();
+        $presentation = new PhpPresentation;
         $presentation->removeSlideByIndex(0);
 
         if ($deck->slides->isEmpty()) {
             $slide = $presentation->createSlide();
-            $shape = new RichText();
+            $shape = new RichText;
             $shape->setHeight(200);
             $shape->setWidth(900);
             $shape->setOffsetX(20);
@@ -56,7 +56,7 @@ class ExportController extends Controller
             $slide = $presentation->createSlide();
             $elements = $slideModel->canvas_state['elements'] ?? [];
 
-            $title = new RichText();
+            $title = new RichText;
             $title->setHeight(40);
             $title->setWidth(900);
             $title->setOffsetX(20);
@@ -82,7 +82,7 @@ class ExportController extends Controller
                 $lines[] = 'No text content on this slide.';
             }
 
-            $body = new RichText();
+            $body = new RichText;
             $body->setHeight(520);
             $body->setWidth(900);
             $body->setOffsetX(20);

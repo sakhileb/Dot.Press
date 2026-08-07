@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\SlideEditorController;
+use App\Models\Project;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -38,7 +39,7 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        $projects = \App\Models\Project::where('user_id', auth()->id())
+        $projects = Project::where('user_id', auth()->id())
             ->with(['decks' => fn ($query) => $query->withCount('slides')->orderByDesc('updated_at')])
             ->latest('id')
             ->get();

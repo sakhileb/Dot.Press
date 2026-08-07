@@ -124,7 +124,7 @@ class ContentGenerator
 
     private function generateSlideWithAnthropic(string $prompt): array
     {
-        $instruction = <<<TXT
+        $instruction = <<<'TXT'
 You are generating one presentation slide.
 Return valid JSON with this exact shape:
 {
