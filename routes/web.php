@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\DependencyPatchController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\SlideEditorController;
 use App\Models\Project;
@@ -60,4 +61,10 @@ Route::middleware([
     Route::get('/export/decks/{deck}/pptx', [ExportController::class, 'pptx'])
         ->middleware('throttle:export')
         ->name('export.decks.pptx');
+
+    Route::middleware('operator')->prefix('operator')->name('operator.')->group(function () {
+        Route::get('/dependency-patches', [DependencyPatchController::class, 'index'])->name('dependency-patches.index');
+        Route::post('/dependency-patches/{proposal}/approve', [DependencyPatchController::class, 'approve'])->name('dependency-patches.approve');
+        Route::post('/dependency-patches/{proposal}/reject', [DependencyPatchController::class, 'reject'])->name('dependency-patches.reject');
+    });
 });
