@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\SlideElementsUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Deck;
 use App\Models\Slide;
@@ -150,6 +151,13 @@ class SlideController extends Controller
 
         $slide = $slide->fresh();
         $slide->canvas_state = $slide->canvasStatePayload();
+
+        if ($incomingElements !== null) {
+            // ->toOthers() reads the X-Socket-Id header the saving
+            // client's own Echo connection sends, so it doesn't receive
+            // an echo of the change it just made itself.
+            broadcast(new SlideElementsUpdated($slide, $request->user()->id, $request->user()->name))->toOthers();
+        }
 
         return $slide;
     }

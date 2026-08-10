@@ -718,6 +718,56 @@ const stopCollaborationSync = () => {
     }
 };
 
+// Presence (above) only ever polls who's looking at a slide. This is the
+// part that makes edits actually show up live: SlideController::update
+// broadcasts SlideElementsUpdated (as 'slide.elements-updated') to
+// 'slide.{id}' with ->toOthers(), so every other tab with this slide open
+// applies the change without waiting for a poll or hitting a save conflict.
+let slideChannelName = null;
+
+const applyRemoteCanvasUpdate = (payload) => {
+    if (!payload || Number(payload.slide_id) !== props.slide.id) {
+        return;
+    }
+
+    if (isDirty.value) {
+        // Don't clobber in-progress local edits. The existing
+        // revision-conflict check on save will surface this collaborator's
+        // change (and reload the latest state) the moment this user saves.
+        errorMessage.value = `${payload.edited_by?.name ?? 'A collaborator'} made changes elsewhere. Save to pick them up.`;
+        return;
+    }
+
+    const incomingElements = Array.isArray(payload.canvas_state?.elements) ? deepClone(payload.canvas_state.elements) : [];
+
+    elements.value = incomingElements;
+    slideRevision.value = Number(payload.revision ?? slideRevision.value);
+    history.value = [deepClone(incomingElements)];
+    historyIndex.value = 0;
+    selectedIds.value = [];
+    errorMessage.value = '';
+};
+
+const subscribeToRealtimeUpdates = () => {
+    if (!window.Echo) {
+        // BROADCAST_CONNECTION isn't set to reverb (see .env.example) --
+        // presence polling above still works, live-updates just don't.
+        return;
+    }
+
+    slideChannelName = `slide.${props.slide.id}`;
+    window.Echo.private(slideChannelName).listen('.slide.elements-updated', applyRemoteCanvasUpdate);
+};
+
+const unsubscribeFromRealtimeUpdates = () => {
+    if (!window.Echo || !slideChannelName) {
+        return;
+    }
+
+    window.Echo.leave(slideChannelName);
+    slideChannelName = null;
+};
+
 const generateSlideWithAi = async () => {
     if (!aiPrompt.value.trim()) {
         errorMessage.value = 'Enter a prompt before generating a slide.';
@@ -1572,6 +1622,7 @@ onMounted(() => {
     refreshImageDeliveryUrls();
     fetchAiUsage();
     startCollaborationSync();
+    subscribeToRealtimeUpdates();
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('resize', updateCanvasViewport);
     nextTick(() => {
@@ -1582,6 +1633,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
     stopTextEditMode(false);
     stopCollaborationSync();
+    unsubscribeFromRealtimeUpdates();
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('resize', updateCanvasViewport);
 });
