@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Deck;
 use App\Models\Slide;
+use App\Services\CanvasElementSyncService;
 use Illuminate\Http\Request;
 
 class SlideController extends Controller
 {
+    public function __construct(private readonly CanvasElementSyncService $canvasElementSync) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -55,13 +58,22 @@ class SlideController extends Controller
         $deck = Deck::with('project')->findOrFail($payload['deck_id']);
         $this->authorize('view', $deck);
 
+        $canvasState = $payload['canvas_state'] ?? ['elements' => []];
+        $elements = $canvasState['elements'] ?? [];
+
         $slide = $deck->slides()->create([
             'title' => $payload['title'] ?? 'Untitled Slide',
             'notes' => $payload['notes'] ?? null,
             'layout' => $payload['layout'] ?? 'blank',
             'sort_order' => $payload['sort_order'] ?? ((int) $deck->slides()->max('sort_order') + 1),
-            'canvas_state' => $payload['canvas_state'] ?? ['elements' => []],
+            'canvas_state' => ['meta' => $canvasState['meta'] ?? ['version' => 1]],
         ]);
+
+        if (! empty($elements)) {
+            $this->canvasElementSync->sync($slide, $elements);
+        }
+
+        $slide->canvas_state = $slide->canvasStatePayload();
 
         return response()->json($slide, 201);
     }
@@ -73,11 +85,19 @@ class SlideController extends Controller
     {
         $this->authorize('view', $slide);
 
-        return $slide->load('deck');
+        $slide->load('deck');
+        $slide->canvas_state = $slide->canvasStatePayload();
+
+        return $slide;
     }
 
     /**
      * Update the specified resource in storage.
+     *
+     * canvas_state.elements is now persisted through the normalized
+     * Element table (via CanvasElementSyncService), not stored as JSON --
+     * canvas_state on the Slide row itself only ever holds non-element
+     * meta (e.g. version/revision) from here on.
      */
     public function update(Request $request, Slide $slide)
     {
@@ -92,6 +112,8 @@ class SlideController extends Controller
             'expected_revision' => ['sometimes', 'integer', 'min:0'],
         ]);
 
+        $incomingElements = null;
+
         if (array_key_exists('canvas_state', $payload) && array_key_exists('expected_revision', $payload)) {
             $expected = (int) $payload['expected_revision'];
 
@@ -100,25 +122,36 @@ class SlideController extends Controller
                     'message' => 'Slide changed in another session. Please reload latest state.',
                     'conflict' => true,
                     'server_revision' => $slide->revision,
-                    'server_canvas_state' => $slide->canvas_state,
+                    'server_canvas_state' => $slide->canvasStatePayload(),
                 ], 409);
             }
 
             $nextRevision = $slide->revision + 1;
             $canvasState = $payload['canvas_state'] ?? [];
+            $incomingElements = $canvasState['elements'] ?? [];
             $meta = is_array($canvasState['meta'] ?? null) ? $canvasState['meta'] : [];
             $meta['revision'] = $nextRevision;
-            $canvasState['meta'] = $meta;
 
-            $payload['canvas_state'] = $canvasState;
+            $payload['canvas_state'] = ['meta' => $meta];
             $payload['revision'] = $nextRevision;
+        } elseif (array_key_exists('canvas_state', $payload)) {
+            $canvasState = $payload['canvas_state'] ?? [];
+            $incomingElements = $canvasState['elements'] ?? [];
+            $payload['canvas_state'] = ['meta' => $canvasState['meta'] ?? ($slide->canvas_state['meta'] ?? ['version' => 1])];
         }
 
         unset($payload['expected_revision']);
 
         $slide->update($payload);
 
-        return $slide->fresh();
+        if ($incomingElements !== null) {
+            $this->canvasElementSync->sync($slide, $incomingElements);
+        }
+
+        $slide = $slide->fresh();
+        $slide->canvas_state = $slide->canvasStatePayload();
+
+        return $slide;
     }
 
     /**

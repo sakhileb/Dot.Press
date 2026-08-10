@@ -45,7 +45,6 @@ class SlideEditorController extends Controller
                 'layout' => 'blank',
                 'sort_order' => 0,
                 'canvas_state' => [
-                    'elements' => [],
                     'meta' => ['version' => 1],
                 ],
             ]);
@@ -86,7 +85,7 @@ class SlideEditorController extends Controller
                 'layout' => $slide->layout,
                 'sort_order' => $slide->sort_order,
                 'revision' => $slide->revision,
-                'canvas_state' => $slide->canvas_state,
+                'canvas_state' => $slide->canvasStatePayload(),
             ],
         ]);
     }
@@ -123,7 +122,7 @@ class SlideEditorController extends Controller
                 'layout' => $slide->layout,
                 'sort_order' => $slide->sort_order,
                 'revision' => $slide->revision,
-                'canvas_state' => $slide->canvas_state,
+                'canvas_state' => $slide->canvasStatePayload(),
             ],
         ]);
     }

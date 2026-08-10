@@ -43,4 +43,25 @@ class Slide extends Model
     {
         return 'deck.project';
     }
+
+    /**
+     * The canvas_state the frontend actually reads: elements assembled
+     * live from the Element table (the source of truth) merged with
+     * whatever non-element meta (e.g. version/revision) lives in the
+     * canvas_state column. Callers should use this instead of the raw
+     * canvas_state attribute wherever elements are read.
+     *
+     * @return array{elements: list<array<string, mixed>>, meta: array<string, mixed>}
+     */
+    public function canvasStatePayload(): array
+    {
+        return [
+            'elements' => $this->elements()
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn (Element $element) => $element->toCanvasElement())
+                ->all(),
+            'meta' => $this->canvas_state['meta'] ?? ['version' => 1],
+        ];
+    }
 }

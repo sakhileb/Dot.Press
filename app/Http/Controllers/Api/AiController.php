@@ -8,6 +8,7 @@ use App\Models\Deck;
 use App\Models\Slide;
 use App\Services\Ai\ContentGenerator;
 use App\Services\Ai\SafetyGuard;
+use App\Services\CanvasElementSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -15,6 +16,8 @@ use Throwable;
 
 class AiController extends Controller
 {
+    public function __construct(private readonly CanvasElementSyncService $canvasElementSync) {}
+
     public function generateSlide(Request $request, Deck $deck, ContentGenerator $generator, SafetyGuard $safetyGuard)
     {
         $deck->loadMissing('project');
@@ -61,7 +64,6 @@ class AiController extends Controller
                 'layout' => 'blank',
                 'sort_order' => ((int) $deck->slides()->max('sort_order')) + 1,
                 'canvas_state' => [
-                    'elements' => $elements,
                     'viewport' => [
                         'width' => 1280,
                         'height' => 720,
@@ -72,6 +74,12 @@ class AiController extends Controller
                     ],
                 ],
             ]);
+
+            if (! empty($elements)) {
+                $this->canvasElementSync->sync($slide, $elements);
+            }
+
+            $slide->canvas_state = $slide->canvasStatePayload();
 
             $usage = Arr::get($result, 'usage', []);
 

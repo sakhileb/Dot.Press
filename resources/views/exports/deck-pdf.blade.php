@@ -16,7 +16,7 @@
 </head>
 <body>
 @foreach ($slides as $slide)
-    @php($elements = $slide->canvas_state['elements'] ?? [])
+    @php($elements = $slide->canvasStatePayload()['elements'])
     <section class="page">
         <h1>{{ $deck->title }}</h1>
         <h2>{{ $slide->title ?: 'Slide '.($loop->index + 1) }}</h2>

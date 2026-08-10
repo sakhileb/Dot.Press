@@ -54,7 +54,7 @@ class ExportController extends Controller
 
         foreach ($deck->slides as $slideModel) {
             $slide = $presentation->createSlide();
-            $elements = $slideModel->canvas_state['elements'] ?? [];
+            $elements = $slideModel->canvasStatePayload()['elements'];
 
             $title = new RichText;
             $title->setHeight(40);
