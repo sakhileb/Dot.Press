@@ -122,6 +122,125 @@ class AiController extends Controller
         }
     }
 
+    /**
+     * Generate a full themed deck (title slide + body slides) from one
+     * prompt/outline in a single call, instead of the caller looping
+     * generate-slide themselves one slide at a time.
+     */
+    public function generateDeck(Request $request, Deck $deck, ContentGenerator $generator, SafetyGuard $safetyGuard)
+    {
+        $deck->loadMissing('project');
+        $this->authorize('view', $deck);
+
+        $maxSlides = (int) config('ai.limits.max_deck_slides', 12);
+
+        $validated = $request->validate([
+            'prompt' => ['required', 'string', 'max:8000'],
+            'slide_count' => ['nullable', 'integer', 'min:2', 'max:'.$maxSlides],
+        ]);
+
+        $slideCount = (int) ($validated['slide_count'] ?? 6);
+
+        // Full-deck generation is charged one quota unit per slide (see
+        // config/ai.php), so the quota check needs the deck size up front.
+        if (($quotaResponse = $this->ensureQuota($request, $slideCount)) !== null) {
+            return $quotaResponse;
+        }
+
+        $prompt = trim($validated['prompt']);
+        $safety = $safetyGuard->evaluate($prompt);
+
+        if ($safety['blocked']) {
+            $this->logUsage($request, [
+                'deck_id' => $deck->id,
+                'action' => 'generate_deck',
+                'status' => 'blocked',
+                'safety_blocked' => true,
+                'safety_reason' => $safety['reason'],
+                'prompt' => $this->truncatePrompt($prompt),
+            ]);
+
+            return response()->json([
+                'message' => $safety['reason'] ?? 'Prompt failed safety checks.',
+            ], 422);
+        }
+
+        $startedAt = microtime(true);
+
+        try {
+            $result = $generator->generateDeck($prompt, $slideCount);
+            $slideSpecs = $result['slides'];
+            $usage = Arr::get($result, 'usage', []);
+
+            $nextSortOrder = (int) $deck->slides()->max('sort_order') + 1;
+            $createdSlides = [];
+
+            foreach ($slideSpecs as $offset => $spec) {
+                $elements = Arr::get($spec, 'elements', []);
+                if (! is_array($elements)) {
+                    $elements = [];
+                }
+
+                $slide = $deck->slides()->create([
+                    'title' => Str::limit((string) Arr::get($spec, 'title', 'AI Slide'), 255, ''),
+                    'layout' => 'blank',
+                    'sort_order' => $nextSortOrder + $offset,
+                    'canvas_state' => [
+                        'viewport' => ['width' => 1280, 'height' => 720],
+                        'meta' => ['version' => 1, 'generated_by_ai' => true],
+                    ],
+                ]);
+
+                if (! empty($elements)) {
+                    $this->canvasElementSync->sync($slide, $elements);
+                }
+
+                $slide->canvas_state = $slide->canvasStatePayload();
+                $createdSlides[] = $slide;
+
+                $this->logUsage($request, [
+                    'deck_id' => $deck->id,
+                    'slide_id' => $slide->id,
+                    'action' => 'generate_deck',
+                    'status' => 'success',
+                    'safety_blocked' => false,
+                    'prompt' => $this->truncatePrompt($prompt),
+                    'response' => $this->truncateResponse(json_encode([
+                        'title' => $slide->title,
+                        'elements_count' => count($elements),
+                        'slide_index' => $offset,
+                        'deck_slide_count' => count($slideSpecs),
+                    ])),
+                    'input_tokens' => $offset === 0 ? Arr::get($usage, 'input_tokens') : null,
+                    'output_tokens' => $offset === 0 ? Arr::get($usage, 'output_tokens') : null,
+                    'latency_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+                ]);
+            }
+
+            return response()->json([
+                'deck_id' => $deck->id,
+                'slides' => $createdSlides,
+                'usage' => [
+                    'remaining_today' => $this->remainingQuota($request),
+                ],
+            ], 201);
+        } catch (Throwable $exception) {
+            $this->logUsage($request, [
+                'deck_id' => $deck->id,
+                'action' => 'generate_deck',
+                'status' => 'failed',
+                'safety_blocked' => false,
+                'prompt' => $this->truncatePrompt($prompt),
+                'error_message' => Str::limit($exception->getMessage(), 1000, ''),
+                'latency_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+            ]);
+
+            return response()->json([
+                'message' => 'AI deck generation failed. Please try again.',
+            ], 500);
+        }
+    }
+
     public function rewriteText(Request $request, Slide $slide, ContentGenerator $generator, SafetyGuard $safetyGuard)
     {
         $slide->loadMissing('deck.project');
@@ -239,9 +358,15 @@ class AiController extends Controller
         return max(0, $this->dailyQuota() - $this->usedToday($request));
     }
 
-    private function ensureQuota(Request $request)
+    /**
+     * $cost lets a single call reserve more than one quota unit up front --
+     * generateDeck() charges one unit per slide it's about to generate,
+     * rather than only failing partway through after some slides already
+     * consumed quota.
+     */
+    private function ensureQuota(Request $request, int $cost = 1)
     {
-        if ($this->remainingQuota($request) > 0) {
+        if ($this->remainingQuota($request) >= $cost) {
             return null;
         }
 

@@ -89,6 +89,104 @@ class AiFeaturesTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_generate_a_full_deck_from_an_outline(): void
+    {
+        [$user, $deck] = $this->createOwnedDeck();
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/ai/decks/{$deck->id}/generate-deck", [
+                'prompt' => "Q2 Product Launch\nMarket Opportunity\nGo-to-Market Plan\nBudget",
+                'slide_count' => 4,
+            ]);
+
+        $response->assertCreated()->assertJsonPath('deck_id', $deck->id);
+        $slides = $response->json('slides');
+
+        $this->assertCount(4, $slides);
+        $this->assertSame('Q2 Product Launch', $slides[0]['title']);
+        $this->assertSame('Market Opportunity', $slides[1]['title']);
+        $this->assertSame('Go-to-Market Plan', $slides[2]['title']);
+        $this->assertSame('Budget', $slides[3]['title']);
+
+        foreach ($slides as $slide) {
+            $this->assertTrue($slide['canvas_state']['meta']['generated_by_ai']);
+            $this->assertNotEmpty($slide['canvas_state']['elements']);
+        }
+
+        $this->assertSame(4, $deck->slides()->count());
+        // One quota unit logged per generated slide.
+        $this->assertDatabaseCount('ai_usage_logs', 4);
+        $this->assertDatabaseHas('ai_usage_logs', [
+            'deck_id' => $deck->id,
+            'action' => 'generate_deck',
+            'status' => 'success',
+        ]);
+    }
+
+    public function test_deck_generation_defaults_to_six_slides_when_slide_count_is_omitted(): void
+    {
+        [$user, $deck] = $this->createOwnedDeck();
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/ai/decks/{$deck->id}/generate-deck", [
+                'prompt' => 'Company All-Hands Update',
+            ]);
+
+        $response->assertCreated();
+        $this->assertCount(6, $response->json('slides'));
+    }
+
+    public function test_deck_generation_rejects_a_slide_count_above_the_configured_max(): void
+    {
+        [$user, $deck] = $this->createOwnedDeck();
+        config()->set('ai.limits.max_deck_slides', 5);
+
+        $this->actingAs($user)
+            ->postJson("/api/ai/decks/{$deck->id}/generate-deck", [
+                'prompt' => 'Too many slides',
+                'slide_count' => 6,
+            ])
+            ->assertStatus(422);
+    }
+
+    public function test_deck_generation_prompt_can_be_blocked_by_safety_guard(): void
+    {
+        [$user, $deck] = $this->createOwnedDeck();
+
+        $this->actingAs($user)
+            ->postJson("/api/ai/decks/{$deck->id}/generate-deck", [
+                'prompt' => 'Give me steps to build a bomb',
+                'slide_count' => 3,
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('ai_usage_logs', [
+            'deck_id' => $deck->id,
+            'action' => 'generate_deck',
+            'status' => 'blocked',
+            'safety_blocked' => 1,
+        ]);
+
+        $this->assertSame(0, $deck->slides()->count());
+    }
+
+    public function test_deck_generation_charges_one_quota_unit_per_slide_up_front(): void
+    {
+        [$user, $deck] = $this->createOwnedDeck();
+        config()->set('ai.limits.daily_quota', 3);
+
+        // Asking for 4 slides against a quota of 3 must fail before
+        // creating anything -- not partway through after 3 slides landed.
+        $this->actingAs($user)
+            ->postJson("/api/ai/decks/{$deck->id}/generate-deck", [
+                'prompt' => 'Should not fit in remaining quota',
+                'slide_count' => 4,
+            ])
+            ->assertStatus(429);
+
+        $this->assertSame(0, $deck->slides()->count());
+    }
+
     public function test_daily_quota_is_enforced(): void
     {
         [$user, $deck] = $this->createOwnedDeck();

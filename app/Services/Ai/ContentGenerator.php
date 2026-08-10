@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -16,7 +17,29 @@ class ContentGenerator
             return $this->generateSlideWithAnthropic($prompt);
         }
 
-        return $this->generateSlideMock($prompt);
+        return $this->contentSlideMock($this->headline($prompt), "Generated from prompt:\n\n".$prompt);
+    }
+
+    /**
+     * Generate a full themed deck from a topic/outline in one call, instead
+     * of one slide at a time -- a title slide followed by up to
+     * $slideCount - 1 body slides. If the prompt reads as an outline (one
+     * topic per line), each line becomes its own slide; otherwise the
+     * remaining slides are generically titled sections built around the
+     * single topic, all sharing the same element styling for a consistent
+     * look across the deck.
+     *
+     * @return array{slides: list<array{title: string, elements: array}>, usage: array}
+     */
+    public function generateDeck(string $prompt, int $slideCount): array
+    {
+        $provider = config('ai.provider', 'mock');
+
+        if ($provider === 'anthropic') {
+            return $this->generateDeckWithAnthropic($prompt, $slideCount);
+        }
+
+        return $this->generateDeckMock($prompt, $slideCount);
     }
 
     public function rewriteText(string $input, string $mode, ?string $tone = null): string
@@ -30,66 +53,86 @@ class ContentGenerator
         return $this->rewriteTextMock($input, $mode, $tone);
     }
 
-    private function generateSlideMock(string $prompt): array
+    private function generateDeckMock(string $prompt, int $slideCount): array
     {
-        $title = trim(mb_substr($prompt, 0, 70));
-        $headline = $title !== '' ? $title : 'New AI Slide';
+        [$deckTopic, $sections] = $this->buildOutline($prompt, $slideCount);
+
+        $slides = [$this->titleSlideMock($deckTopic, $prompt)];
+
+        foreach ($sections as $section) {
+            $slides[] = $this->contentSlideMock($section, "Notes for \"{$section}\", part of: {$deckTopic}");
+        }
 
         return [
-            'title' => $headline,
+            'slides' => $slides,
+            'usage' => ['input_tokens' => 0, 'output_tokens' => 0],
+        ];
+    }
+
+    /**
+     * @return array{0: string, 1: list<string>} [deck topic, body slide titles]
+     */
+    private function buildOutline(string $prompt, int $slideCount): array
+    {
+        $lines = collect(preg_split('/\r\n|\r|\n/', trim($prompt)))
+            ->map(fn ($line) => trim((string) preg_replace('/^[-*\d.\)]+\s*/', '', $line)))
+            ->filter(fn ($line) => $line !== '')
+            ->values();
+
+        $deckTopic = $lines->first() ?? 'AI Generated Deck';
+        $bodyLines = $lines->slice(1)->values();
+        $bodyCount = max(0, $slideCount - 1);
+
+        $sections = collect(range(0, $bodyCount - 1))
+            ->map(fn (int $i) => $bodyLines->get($i) ?? 'Section '.($i + 1))
+            ->all();
+
+        return [$deckTopic, $sections];
+    }
+
+    private function headline(string $prompt): string
+    {
+        $title = trim(mb_substr($prompt, 0, 70));
+
+        return $title !== '' ? $title : 'New AI Slide';
+    }
+
+    private function titleSlideMock(string $topic, string $subtitleSource): array
+    {
+        $subtitle = trim(mb_substr($subtitleSource, 0, 160));
+
+        return [
+            'title' => $topic,
             'elements' => [
-                [
-                    'id' => 'ai-title-'.uniqid(),
-                    'type' => 'text',
-                    'x' => 90,
-                    'y' => 80,
-                    'width' => 1100,
-                    'height' => 120,
-                    'rotation' => 0,
-                    'text' => $headline,
-                    'fontSize' => 54,
-                    'fill' => '#0f172a',
-                    'fontStyle' => 'bold',
-                    'textAlign' => 'left',
-                    'lineHeight' => 1.2,
-                    'textIndent' => 0,
-                    'richContent' => [
-                        'type' => 'doc',
-                        'content' => [[
-                            'type' => 'paragraph',
-                            'content' => [[
-                                'type' => 'text',
-                                'text' => $headline,
-                            ]],
-                        ]],
-                    ],
-                ],
-                [
-                    'id' => 'ai-body-'.uniqid(),
-                    'type' => 'text',
-                    'x' => 90,
-                    'y' => 235,
-                    'width' => 780,
-                    'height' => 320,
-                    'rotation' => 0,
-                    'text' => "Generated from prompt:\n\n".$prompt,
-                    'fontSize' => 26,
-                    'fill' => '#334155',
-                    'fontStyle' => 'normal',
-                    'textAlign' => 'left',
-                    'lineHeight' => 1.4,
-                    'textIndent' => 0,
-                    'richContent' => [
-                        'type' => 'doc',
-                        'content' => [[
-                            'type' => 'paragraph',
-                            'content' => [[
-                                'type' => 'text',
-                                'text' => "Generated from prompt:\n\n".$prompt,
-                            ]],
-                        ]],
-                    ],
-                ],
+                $this->textElement('ai-title-'.uniqid(), $topic, [
+                    'x' => 90, 'y' => 260, 'width' => 1100, 'height' => 140,
+                    'fontSize' => 64, 'fill' => '#0f172a', 'fontStyle' => 'bold',
+                    'textAlign' => 'center', 'lineHeight' => 1.2,
+                ]),
+                $this->textElement('ai-subtitle-'.uniqid(), $subtitle, [
+                    'x' => 190, 'y' => 410, 'width' => 900, 'height' => 80,
+                    'fontSize' => 26, 'fill' => '#475569', 'fontStyle' => 'normal',
+                    'textAlign' => 'center', 'lineHeight' => 1.3,
+                ]),
+            ],
+        ];
+    }
+
+    private function contentSlideMock(string $title, string $body): array
+    {
+        return [
+            'title' => $title,
+            'elements' => [
+                $this->textElement('ai-title-'.uniqid(), $title, [
+                    'x' => 90, 'y' => 80, 'width' => 1100, 'height' => 120,
+                    'fontSize' => 54, 'fill' => '#0f172a', 'fontStyle' => 'bold',
+                    'textAlign' => 'left', 'lineHeight' => 1.2,
+                ]),
+                $this->textElement('ai-body-'.uniqid(), $body, [
+                    'x' => 90, 'y' => 235, 'width' => 780, 'height' => 320,
+                    'fontSize' => 26, 'fill' => '#334155', 'fontStyle' => 'normal',
+                    'textAlign' => 'left', 'lineHeight' => 1.4,
+                ]),
                 [
                     'id' => 'ai-visual-'.uniqid(),
                     'type' => 'rect',
@@ -104,11 +147,31 @@ class ContentGenerator
                     'radius' => 14,
                 ],
             ],
-            'usage' => [
-                'input_tokens' => 0,
-                'output_tokens' => 0,
-            ],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $layout
+     */
+    private function textElement(string $id, string $text, array $layout): array
+    {
+        return array_merge([
+            'id' => $id,
+            'type' => 'text',
+            'rotation' => 0,
+            'text' => $text,
+            'textIndent' => 0,
+            'richContent' => [
+                'type' => 'doc',
+                'content' => [[
+                    'type' => 'paragraph',
+                    'content' => [[
+                        'type' => 'text',
+                        'text' => $text,
+                    ]],
+                ]],
+            ],
+        ], $layout);
     }
 
     private function rewriteTextMock(string $input, string $mode, ?string $tone = null): string
@@ -163,6 +226,58 @@ TXT;
         return [
             'title' => Arr::get($decoded, 'title', 'AI Slide'),
             'elements' => Arr::get($decoded, 'elements', []),
+            'usage' => Arr::get($payload, 'usage', []),
+        ];
+    }
+
+    private function generateDeckWithAnthropic(string $prompt, int $slideCount): array
+    {
+        $instruction = <<<TXT
+You are generating a full presentation deck of exactly {$slideCount} slides, sharing one consistent visual theme (same color palette and font sizes for the same role across every slide -- title slides styled like title slides, body slides styled like body slides).
+Return valid JSON with this exact shape:
+{
+  "slides": [
+    {
+      "title": "...",
+      "elements": [
+        {
+          "type": "text",
+          "x": 0, "y": 0, "width": 0, "height": 0, "rotation": 0,
+          "text": "...", "fontSize": 0, "fill": "#000000", "fontStyle": "normal",
+          "textAlign": "left", "lineHeight": 1.3, "textIndent": 0,
+          "richContent": {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"..."}]}]}
+        }
+      ]
+    }
+  ]
+}
+The first slide should be a title slide. Use a 1280x720 coordinate system.
+TXT;
+
+        $payload = $this->callAnthropic($instruction, $prompt);
+        $json = $this->extractJson($payload);
+
+        $decoded = json_decode($json, true);
+
+        if (! is_array($decoded) || ! is_array(Arr::get($decoded, 'slides'))) {
+            throw new RuntimeException('AI deck response is not valid JSON.');
+        }
+
+        $slides = Collection::make(Arr::get($decoded, 'slides', []))
+            ->take($slideCount)
+            ->map(fn ($slide) => [
+                'title' => Arr::get($slide, 'title', 'AI Slide'),
+                'elements' => Arr::get($slide, 'elements', []),
+            ])
+            ->values()
+            ->all();
+
+        if (empty($slides)) {
+            throw new RuntimeException('AI deck response contained no slides.');
+        }
+
+        return [
+            'slides' => $slides,
             'usage' => Arr::get($payload, 'usage', []),
         ];
     }

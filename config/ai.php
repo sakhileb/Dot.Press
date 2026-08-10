@@ -13,6 +13,10 @@ return [
     'limits' => [
         'daily_quota' => (int) env('AI_DAILY_QUOTA', 100),
         'per_minute' => (int) env('AI_RATE_LIMIT_PER_MINUTE', 20),
+        // Full-deck generation is charged one quota unit per slide (the
+        // same cost as generating that many slides one at a time), so this
+        // also caps how much quota a single generate-deck call can spend.
+        'max_deck_slides' => (int) env('AI_MAX_DECK_SLIDES', 12),
     ],
 
     'logging' => [

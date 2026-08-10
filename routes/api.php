@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::prefix('ai')->middleware('throttle:ai')->group(function (): void {
         Route::get('usage', [AiController::class, 'usage']);
         Route::post('decks/{deck}/generate-slide', [AiController::class, 'generateSlide']);
+        Route::post('decks/{deck}/generate-deck', [AiController::class, 'generateDeck']);
         Route::post('slides/{slide}/rewrite-text', [AiController::class, 'rewriteText']);
     });
 
