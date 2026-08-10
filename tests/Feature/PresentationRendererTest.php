@@ -22,10 +22,11 @@ class PresentationRendererTest extends TestCase
 
     public function test_owner_can_open_presentation_route(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Presentation Project',
             'slug' => 'presentation-project',
         ]);
@@ -75,11 +76,12 @@ class PresentationRendererTest extends TestCase
 
     public function test_non_owner_cannot_open_presentation_route(): void
     {
-        $owner = User::factory()->create();
-        $intruder = User::factory()->create();
+        $owner = User::factory()->withPersonalTeam()->create();
+        $intruder = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $owner->id,
+            'team_id' => $owner->currentTeam->id,
             'name' => 'Owner Project',
             'slug' => 'owner-project',
         ]);

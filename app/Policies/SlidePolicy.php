@@ -20,7 +20,7 @@ class SlidePolicy
      */
     public function view(User $user, Slide $slide): bool
     {
-        return $slide->deck->project->user_id === $user->id;
+        return $user->belongsToTeam($slide->deck->project->team);
     }
 
     /**
@@ -36,7 +36,7 @@ class SlidePolicy
      */
     public function update(User $user, Slide $slide): bool
     {
-        return $slide->deck->project->user_id === $user->id;
+        return $user->belongsToTeam($slide->deck->project->team);
     }
 
     /**
@@ -44,7 +44,7 @@ class SlidePolicy
      */
     public function delete(User $user, Slide $slide): bool
     {
-        return $slide->deck->project->user_id === $user->id;
+        return $user->belongsToTeam($slide->deck->project->team);
     }
 
     /**
@@ -52,7 +52,7 @@ class SlidePolicy
      */
     public function restore(User $user, Slide $slide): bool
     {
-        return $slide->deck->project->user_id === $user->id;
+        return $user->belongsToTeam($slide->deck->project->team);
     }
 
     /**
@@ -60,6 +60,6 @@ class SlidePolicy
      */
     public function forceDelete(User $user, Slide $slide): bool
     {
-        return $slide->deck->project->user_id === $user->id;
+        return $user->belongsToTeam($slide->deck->project->team);
     }
 }

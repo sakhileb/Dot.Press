@@ -15,10 +15,11 @@ class ExportPipelineTest extends TestCase
 
     public function test_owner_can_download_pdf_and_pptx_exports(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Export Project',
             'slug' => 'export-project',
         ]);

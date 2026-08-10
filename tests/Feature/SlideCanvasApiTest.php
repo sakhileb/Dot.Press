@@ -15,10 +15,11 @@ class SlideCanvasApiTest extends TestCase
 
     public function test_owner_can_update_slide_canvas_state(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Canvas Project',
             'slug' => 'canvas-project',
         ]);
@@ -62,11 +63,12 @@ class SlideCanvasApiTest extends TestCase
 
     public function test_non_owner_cannot_update_slide_canvas_state(): void
     {
-        $owner = User::factory()->create();
-        $intruder = User::factory()->create();
+        $owner = User::factory()->withPersonalTeam()->create();
+        $intruder = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $owner->id,
+            'team_id' => $owner->currentTeam->id,
             'name' => 'Owner Project',
             'slug' => 'owner-project',
         ]);
@@ -99,10 +101,11 @@ class SlideCanvasApiTest extends TestCase
 
     public function test_canvas_update_detects_revision_conflict(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Conflict Project',
             'slug' => 'conflict-project',
         ]);

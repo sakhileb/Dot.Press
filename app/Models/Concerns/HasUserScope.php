@@ -6,25 +6,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Dot.Press is single-user, not team-scoped (Jetstream Teams is
- * installed for account/billing grouping, but no content model carries
- * a team_id -- ownership of every Project ultimately resolves to
- * Project.user_id, see ProjectPolicy and its siblings). Every model
- * that owns a user_id column directly applies this trait so a query
- * against it is scoped to the authenticated user by default, the same
- * way Dot.Mines' HasTeamFilters scopes every tenant-owned model to the
- * current team -- the goal is that a forgotten where('user_id', ...)
- * call in a future controller can no longer leak another user's rows,
- * because the model itself never returns unscoped results while a user
- * is authenticated.
+ * The presentation domain (Project and everything under it) moved to
+ * team-scoping -- see HasTeamScope on Project and the team_id check in
+ * HasUserScopeThroughOwner. This trait is genuinely single-user territory
+ * now: AiUsageLog is a personal usage/audit trail, not a shared content
+ * model, and stays scoped to the authenticated user's own rows the same
+ * way it always was.
  *
- * Models that don't carry their own user_id column (Deck, Slide,
- * Element, Asset -- ownership is transitive through project_id/deck_id/
- * slide_id up to Project) use the companion HasUserScopeThroughOwner
- * trait instead.
- *
- * mass-assignment still sets user_id explicitly at create time (see
- * each controller's store()); this scope only governs reads.
+ * mass-assignment still sets user_id explicitly at create time; this
+ * scope only governs reads.
  */
 trait HasUserScope
 {

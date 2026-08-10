@@ -10,13 +10,17 @@ class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * No explicit team filter needed: Project's HasTeamScope trait
+     * already restricts every query to teams the authenticated user
+     * belongs to, so this lists every project the user's teams own
+     * (not just projects they personally created).
      */
     public function index()
     {
         $this->authorize('viewAny', Project::class);
 
-        return request()->user()
-            ->projects()
+        return Project::query()
             ->latest('id')
             ->paginate(15);
     }
@@ -35,7 +39,10 @@ class ProjectController extends Controller
             'settings' => ['nullable', 'array'],
         ]);
 
-        $project = $request->user()->projects()->create($payload);
+        $project = $request->user()->projects()->create([
+            ...$payload,
+            'team_id' => $request->user()->currentTeam->id,
+        ]);
 
         return response()->json($project, 201);
     }

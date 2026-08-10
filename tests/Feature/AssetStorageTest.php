@@ -18,9 +18,10 @@ class AssetStorageTest extends TestCase
         config()->set('filesystems.asset_upload_disk', 'local');
         Storage::fake('local');
 
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'DotPress',
             'slug' => 'dotpress',
         ]);
@@ -65,11 +66,12 @@ class AssetStorageTest extends TestCase
         config()->set('filesystems.asset_upload_disk', 'local');
         Storage::fake('local');
 
-        $owner = User::factory()->create();
-        $intruder = User::factory()->create();
+        $owner = User::factory()->withPersonalTeam()->create();
+        $intruder = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $owner->id,
+            'team_id' => $owner->currentTeam->id,
             'name' => 'Owner Project',
             'slug' => 'owner-project',
         ]);

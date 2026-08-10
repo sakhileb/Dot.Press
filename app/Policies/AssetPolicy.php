@@ -20,7 +20,7 @@ class AssetPolicy
      */
     public function view(User $user, Asset $asset): bool
     {
-        return $asset->project->user_id === $user->id;
+        return $user->belongsToTeam($asset->project->team);
     }
 
     /**
@@ -36,7 +36,7 @@ class AssetPolicy
      */
     public function update(User $user, Asset $asset): bool
     {
-        return $asset->project->user_id === $user->id;
+        return $user->belongsToTeam($asset->project->team);
     }
 
     /**
@@ -44,7 +44,7 @@ class AssetPolicy
      */
     public function delete(User $user, Asset $asset): bool
     {
-        return $asset->project->user_id === $user->id;
+        return $user->belongsToTeam($asset->project->team);
     }
 
     /**
@@ -52,7 +52,7 @@ class AssetPolicy
      */
     public function restore(User $user, Asset $asset): bool
     {
-        return $asset->project->user_id === $user->id;
+        return $user->belongsToTeam($asset->project->team);
     }
 
     /**
@@ -60,6 +60,6 @@ class AssetPolicy
      */
     public function forceDelete(User $user, Asset $asset): bool
     {
-        return $asset->project->user_id === $user->id;
+        return $user->belongsToTeam($asset->project->team);
     }
 }

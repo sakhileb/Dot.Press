@@ -20,7 +20,7 @@ class DeckPolicy
      */
     public function view(User $user, Deck $deck): bool
     {
-        return $deck->project->user_id === $user->id;
+        return $user->belongsToTeam($deck->project->team);
     }
 
     /**
@@ -36,7 +36,7 @@ class DeckPolicy
      */
     public function update(User $user, Deck $deck): bool
     {
-        return $deck->project->user_id === $user->id;
+        return $user->belongsToTeam($deck->project->team);
     }
 
     /**
@@ -44,7 +44,7 @@ class DeckPolicy
      */
     public function delete(User $user, Deck $deck): bool
     {
-        return $deck->project->user_id === $user->id;
+        return $user->belongsToTeam($deck->project->team);
     }
 
     /**
@@ -52,7 +52,7 @@ class DeckPolicy
      */
     public function restore(User $user, Deck $deck): bool
     {
-        return $deck->project->user_id === $user->id;
+        return $user->belongsToTeam($deck->project->team);
     }
 
     /**
@@ -60,6 +60,6 @@ class DeckPolicy
      */
     public function forceDelete(User $user, Deck $deck): bool
     {
-        return $deck->project->user_id === $user->id;
+        return $user->belongsToTeam($deck->project->team);
     }
 }

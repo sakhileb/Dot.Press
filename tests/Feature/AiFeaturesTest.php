@@ -115,10 +115,11 @@ class AiFeaturesTest extends TestCase
 
     private function createOwnedDeck(): array
     {
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'AI Project',
             'slug' => 'ai-project',
         ]);

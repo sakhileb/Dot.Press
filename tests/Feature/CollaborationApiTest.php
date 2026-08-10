@@ -15,10 +15,11 @@ class CollaborationApiTest extends TestCase
 
     public function test_owner_can_send_collaboration_heartbeat(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->withPersonalTeam()->create();
 
         $project = Project::create([
             'user_id' => $user->id,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Collab Project',
             'slug' => 'collab-project',
         ]);

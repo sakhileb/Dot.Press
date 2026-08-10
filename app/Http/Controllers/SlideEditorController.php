@@ -15,13 +15,15 @@ class SlideEditorController extends Controller
     public function start(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $team = $user->currentTeam;
 
         $project = Project::firstOrCreate(
             [
-                'user_id' => $user->id,
+                'team_id' => $team->id,
                 'name' => 'Dot.Press Workspace',
             ],
             [
+                'user_id' => $user->id,
                 'slug' => 'dot-press-workspace',
                 'settings' => ['theme' => 'default'],
             ],
